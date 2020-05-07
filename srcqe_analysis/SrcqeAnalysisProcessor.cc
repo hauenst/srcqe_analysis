@@ -1,21 +1,17 @@
 #include "TLorentzVector.h"
 
+#include <fmt/format.h>     // For format and print functions
 #include <fmt/core.h>
 
 #include <JANA/JEvent.h>
 #include <dis/functions.h>
 #include <MinimalistModel/McFluxHit.h>
-#include <MinimalistModel/McGeneratedParticle.h>
 #include <MinimalistModel/McTrack.h>
 
-#include "SrcqeAnalysisProcessor.h"
-
-#include <TClingRuntime.h>
-#include <fmt/format.h>     // For format and print functions
-#include "Math/Vector4D.h"
 #include <ejana/EServicePool.h>
-#include <ejana/plugins/io/lund_reader/LundEventData.h>
 #include <ejana/EStringHelpers.h>
+
+#include "SrcqeAnalysisProcessor.h"
 
 
 // TODO repalce by some 'conventional' PDG info provider. Like TDatabasePDG
@@ -28,26 +24,8 @@ Double_t MassPI = 0.139570,
         MassMU = 0.105658;
 //==================================================================
 
-
 using namespace std;
 using namespace fmt;
-
-
-struct MesonStructureRecord {
-    double Q2_true;
-    double Q2_smeared;
-    double Q2_trkng;
-    double Xel, Yel, Q2el;
-    // double Xtrue,Ytrue, Q2true;
-    double Xgen, Ygen, Q2gen;
-    double Eth;
-    double Ee;
-    double p;
-    double pt;
-};
-
-static MesonStructureRecord vmrec;
-
 
 void SrcqeAnalysisProcessor::Init() {
     ///  Called once at program start.
