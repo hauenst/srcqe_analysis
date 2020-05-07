@@ -11,7 +11,7 @@ from pyjano.jana import Jana, PluginFromSource
 my_plugin = PluginFromSource('./srcqe_analysis')   # Name must correspond to one in CMakeFileLists.txt
 # add name=<...> for custom name
 
-jana = Jana(nevents=1000, output='example.root')
+jana = Jana(nevents=1000, output='OUTPUTS/anaout.root')
 jana.plugin('g4e_reader') \
     .source('OUTPUTS/g4e_srcqe.root')
 

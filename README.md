@@ -6,7 +6,7 @@ To run on ifarm
 source /group/eic/escalate/env.sh
 ```
 
-To run python example
+To run python example, edit run_g4e.py (file names, etc) and run
 
 ```bash
 # G4E
