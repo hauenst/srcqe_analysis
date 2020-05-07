@@ -1,0 +1,10 @@
+
+.idea/
+
+cmake-build-debug/
+
+example_plugin/cmake-build/
+
+*.so
+
+*.root
