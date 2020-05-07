@@ -29,3 +29,11 @@ ejana
 OUTPUTS/g4e_srcqe.root
 ```
 
+What files to change:
+
+* The main file is 
+   [srcqe_analysis/SrcqeAnalysisProcessor.cc](srcqe_analysis/SrcqeAnalysisProcessor.cc)
+* For convenience all tons of historgrams are initialized and live in 
+   [srcqe_analysis/SrcqeRootOutput.h](srcqe_analysis/SrcqeRootOutput.h)
+
+SrcqeRootOutput.h
