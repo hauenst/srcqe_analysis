@@ -32,7 +32,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
   }
   else if (setting == 2) { //100GeV proton setting
   //  ionmomentum = 100./2 * targetA;
-    ionenergy = 100 * targetA;
+    ionenergy = 110 * targetA;
   }
   else if (setting == 3) { //41 GeV proton setting
   //  ionmomentum = 41./2 * targetA;
@@ -232,39 +232,55 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
 //ffi_RPOT_D2_lay
 //fi_D1_TRK_
 //ffi_ZDC_
-  TH2F *h2_x_y_ZDC_np_lead = new TH2F("h2_x_y_ZDC_np_lead","ZDC: n lead  (np) ",100,600,1100,100,0,100);
-  TH2F *h2_x_y_ZDC_np_reco = new TH2F("h2_x_y_ZDC_np_reco","ZDC: p recoil (np)",100,600,1100,100,0,100);
-  TH2F *h2_x_y_ZDC_pn_lead = new TH2F("h2_x_y_ZDC_pn_lead","ZDC: p lead  (pn) ",100,600,1100,100,0,100);
-  TH2F *h2_x_y_ZDC_pn_reco = new TH2F("h2_x_y_ZDC_pn_reco","ZDC: n recoil (pn)",100,600,1100,100,0,100);
-  TH2F *h2_x_y_ZDC_nn_lead = new TH2F("h2_x_y_ZDC_nn_lead","ZDC: n lead  (nn) ",100,600,1100,100,0,100);
-  TH2F *h2_x_y_ZDC_nn_reco = new TH2F("h2_x_y_ZDC_nn_reco","ZDC: n recoil (nn)",100,600,1100,100,0,100);
-  TH2F *h2_x_y_ZDC_pp_lead = new TH2F("h2_x_y_ZDC_pp_lead","ZDC: p lead  (pp) ",100,600,1100,100,0,100);
-  TH2F *h2_x_y_ZDC_pp_reco = new TH2F("h2_x_y_ZDC_pp_reco","ZDC: p recoil (pp)",100,600,1100,100,0,100);
-  TH2F *h2_x_y_ZDC_lead_n = new TH2F("h2_x_y_ZDC_lead_n","ZDC: n lead (all pairs) ",100,600,1100,100,0,100);
-  TH2F *h2_x_y_ZDC_lead_p = new TH2F("h2_x_y_ZDC_lead_p","ZDC: p lead (all pairs) ",100,600,1100,100,0,100);
-  TH2F *h2_x_y_ZDC_reco_n = new TH2F("h2_x_y_ZDC_reco_n","ZDC: n recoil (all pairs) ",100,600,1100,100,0,100);
-  TH2F *h2_x_y_ZDC_reco_p = new TH2F("h2_x_y_ZDC_reco_p","ZDC: p recoil (all pairs) ",100,600,1100,100,0,100);
+  TH2F *h2_x_y_ZDC_np_lead = new TH2F("h2_x_y_ZDC_np_lead","ZDC: n lead  (np) ",100,400,1300,100,-300,300);
+  TH2F *h2_x_y_ZDC_np_reco = new TH2F("h2_x_y_ZDC_np_reco","ZDC: p recoil (np)",100,400,1300,100,-300,300);
+  TH2F *h2_x_y_ZDC_pn_lead = new TH2F("h2_x_y_ZDC_pn_lead","ZDC: p lead  (pn) ",100,400,1300,100,-300,300);
+  TH2F *h2_x_y_ZDC_pn_reco = new TH2F("h2_x_y_ZDC_pn_reco","ZDC: n recoil (pn)",100,400,1300,100,-300,300);
+  TH2F *h2_x_y_ZDC_nn_lead = new TH2F("h2_x_y_ZDC_nn_lead","ZDC: n lead  (nn) ",100,400,1300,100,-300,300);
+  TH2F *h2_x_y_ZDC_nn_reco = new TH2F("h2_x_y_ZDC_nn_reco","ZDC: n recoil (nn)",100,400,1300,100,-300,300);
+  TH2F *h2_x_y_ZDC_pp_lead = new TH2F("h2_x_y_ZDC_pp_lead","ZDC: p lead  (pp) ",100,400,1300,100,-300,300);
+  TH2F *h2_x_y_ZDC_pp_reco = new TH2F("h2_x_y_ZDC_pp_reco","ZDC: p recoil (pp)",100,400,1300,100,-300,300);
+  TH2F *h2_x_y_ZDC_lead_n = new TH2F("h2_x_y_ZDC_lead_n","ZDC: n lead (all pairs) ",100,400,1300,100,-300,300);
+  TH2F *h2_x_y_ZDC_lead_p = new TH2F("h2_x_y_ZDC_lead_p","ZDC: p lead (all pairs) ",100,400,1300,100,-300,300);
+  TH2F *h2_x_y_ZDC_reco_n = new TH2F("h2_x_y_ZDC_reco_n","ZDC: n recoil (all pairs) ",100,400,1300,100,-300,300);
+  TH2F *h2_x_y_ZDC_reco_p = new TH2F("h2_x_y_ZDC_reco_p","ZDC: p recoil (all pairs) ",100,400,1300,100,-300,300);
 
-  TH2F *h2_x_y_Roman1_np_lead = new TH2F("h2_x_y_Roman1_np_lead","Roman1: n lead (np) ",100,600,1100,80,-40,40);
-  TH2F *h2_x_y_Roman1_np_reco = new TH2F("h2_x_y_Roman1_np_reco","Roman1: p recoil (np)",100,600,1100,80,-40,40);
-  TH2F *h2_x_y_Roman1_pn_lead = new TH2F("h2_x_y_Roman1_pn_lead","Roman1: p lead (pn) ",100,600,1100,80,-40,40);
-  TH2F *h2_x_y_Roman1_pn_reco = new TH2F("h2_x_y_Roman1_pn_reco","Roman1: n recoil (pn)",100,600,1100,80,-40,40);
-  TH2F *h2_x_y_Roman1_nn_lead = new TH2F("h2_x_y_Roman1_nn_lead","Roman1: n lead (nn) ",100,600,1100,80,-40,40);
-  TH2F *h2_x_y_Roman1_nn_reco = new TH2F("h2_x_y_Roman1_nn_reco","Roman1: n recoil (nn)",100,600,1100,80,-40,40);
-  TH2F *h2_x_y_Roman1_pp_lead = new TH2F("h2_x_y_Roman1_pp_lead","Roman1: p lead (pp) ",100,600,1100,80,-40,40);
-  TH2F *h2_x_y_Roman1_pp_reco = new TH2F("h2_x_y_Roman1_pp_reco","Roman1: p recoil (pp)",100,600,1100,80,-40,40);
-  TH2F *h2_x_y_Roman1_lead_p = new TH2F("h2_x_y_Roman1_lead_p","Roman1: p lead (all pairs)",100,600,1100,80,-40,40);
-  TH2F *h2_x_y_Roman1_lead_n = new TH2F("h2_x_y_Roman1_lead_n","Roman1: n lead (all pairs)",100,600,1100,80,-40,40);
-  TH2F *h2_x_y_Roman1_reco_p = new TH2F("h2_x_y_Roman1_reco_p","Roman1: p recoil (all pairs)",100,600,1100,80,-40,40);
-  TH2F *h2_x_y_Roman1_reco_n = new TH2F("h2_x_y_Roman1_reco_n","Roman1: n recoil (all pairs)",100,600,1100,80,-40,40);
+  TH2F *h2_x_y_Roman1_np_lead = new TH2F("h2_x_y_Roman1_np_lead","Roman1: n lead (np) ",100,650,1050,80,-60,60);
+  TH2F *h2_x_y_Roman1_np_reco = new TH2F("h2_x_y_Roman1_np_reco","Roman1: p recoil (np)",100,650,1050,80,-60,60);
+  TH2F *h2_x_y_Roman1_pn_lead = new TH2F("h2_x_y_Roman1_pn_lead","Roman1: p lead (pn) ",100,650,1050,80,-60,60);
+  TH2F *h2_x_y_Roman1_pn_reco = new TH2F("h2_x_y_Roman1_pn_reco","Roman1: n recoil (pn)",100,650,1050,80,-60,60);
+  TH2F *h2_x_y_Roman1_nn_lead = new TH2F("h2_x_y_Roman1_nn_lead","Roman1: n lead (nn) ",100,650,1050,80,-60,60);
+  TH2F *h2_x_y_Roman1_nn_reco = new TH2F("h2_x_y_Roman1_nn_reco","Roman1: n recoil (nn)",100,650,1050,80,-60,60);
+  TH2F *h2_x_y_Roman1_pp_lead = new TH2F("h2_x_y_Roman1_pp_lead","Roman1: p lead (pp) ",100,650,1050,80,-60,60);
+  TH2F *h2_x_y_Roman1_pp_reco = new TH2F("h2_x_y_Roman1_pp_reco","Roman1: p recoil (pp)",100,650,1050,80,-60,60);
+  TH2F *h2_x_y_Roman1_lead_p = new TH2F("h2_x_y_Roman1_lead_p","Roman1: p lead (all pairs)",100,650,1050,80,-60,60);
+  TH2F *h2_x_y_Roman1_lead_n = new TH2F("h2_x_y_Roman1_lead_n","Roman1: n lead (all pairs)",100,650,1050,80,-60,60);
+  TH2F *h2_x_y_Roman1_reco_p = new TH2F("h2_x_y_Roman1_reco_p","Roman1: p recoil (all pairs)",100,650,1050,80,-60,60);
+  TH2F *h2_x_y_Roman1_reco_n = new TH2F("h2_x_y_Roman1_reco_n","Roman1: n recoil (all pairs)",100,650,1050,80,-60,60);
 
-  TH2F *h2_x_y_Roman2_np = new TH2F("h2_x_y_Roman2_np","Roman2: n lead (np) ",100,600,1100,80,-40,40);
+
+  TH2F *h2_x_y_B0_lead_p = new TH2F("h2_x_y_B0_lead_p","B0: p lead (all pairs)",100,-100,400,200,-250,250);
+  TH2F *h2_x_y_B0_lead_n = new TH2F("h2_x_y_B0_lead_n","B0: n lead (all pairs)",100,-100,400,200,-250,250);
+  TH2F *h2_x_y_B0_reco_p = new TH2F("h2_x_y_B0_reco_p","B0: p recoil (all pairs)",100,-100,400,200,-250,250);
+  TH2F *h2_x_y_B0_reco_n = new TH2F("h2_x_y_B0_reco_n","B0: n recoil (all pairs)",100,-100,400,200,-250,250);
+
+  TH2F *h2_x_y_OFF_lead_p = new TH2F("h2_x_y_OFF_lead_p","OFF: p lead (all pairs)",100,500,900,100,-150,150);
+  TH2F *h2_x_y_OFF_lead_n = new TH2F("h2_x_y_OFF_lead_n","OFF: n lead (all pairs)",100,500,900,100,-150,150);
+  TH2F *h2_x_y_OFF_reco_p = new TH2F("h2_x_y_OFF_reco_p","OFF: p recoil (all pairs)",100,500,900,100,-150,150);
+  TH2F *h2_x_y_OFF_reco_n = new TH2F("h2_x_y_OFF_reco_n","OFF: n recoil (all pairs)",100,500,900,100,-150,150);
+
+  TH2F *h2_x_y_OFF2_lead_p = new TH2F("h2_x_y_OFF2_lead_p","OFF2: p lead (all pairs)",100,650,1250,100,-150,150);
+  TH2F *h2_x_y_OFF2_lead_n = new TH2F("h2_x_y_OFF2_lead_n","OFF2: n lead (all pairs)",100,650,1250,100,-150,150);
+  TH2F *h2_x_y_OFF2_reco_p = new TH2F("h2_x_y_OFF2_reco_p","OFF2: p recoil (all pairs)",100,650,1250,100,-150,150);
+  TH2F *h2_x_y_OFF2_reco_n = new TH2F("h2_x_y_OFF2_reco_n","OFF2: n recoil (all pairs)",100,650,1250,100,-150,150);
+
+  /*TH2F *h2_x_y_Roman2_np = new TH2F("h2_x_y_Roman2_np","Roman2: n lead (np) ",100,600,1100,80,-40,40);
   TH2F *h2_x_y_Roman2_pn = new TH2F("h2_x_y_Roman2_pn","Roman2: n lead (np) ",100,600,1100,80,-40,40);
   TH2F *h2_x_y_Roman3_np = new TH2F("h2_x_y_Roman3_np","Roman3: n lead (np)",100,600,1100,80,-40,40);
   TH2F *h2_x_y_Roman3_pn = new TH2F("h2_x_y_Roman3_pn","Roman3: n lead (np)",100,600,1100,80,-40,40);
   TH2F *h2_x_y_Roman4_np = new TH2F("h2_x_y_Roman4_np","Roman4: n lead (np)",100,600,1100,80,-40,40);
   TH2F *h2_x_y_Roman4_pn = new TH2F("h2_x_y_Roman4_pn","Roman4: n lead (np)",100,600,1100,80,-40,40);
-
+*/
   //TH1F *h1_gen_pdg_one = new TH1F("h1_gen_pdg_one","",20,0,20);
   for (int i = 0; i < numberofevents; i++) {
 //  for (int i = 0; i < 100; i++) {
@@ -732,7 +748,19 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
 
            }
            if (hit_vol_name->at(ihit).rfind("ffi_OFFM_TRK_lay_Phys",0) == 0 ) { //OFF Momentum
-
+          // if (hit_vol_name->at(ihit).rfind("ffi_OFFM_TRK_lay_Phys",0) == 0 ) { //OFF Momentum Tracker 1
+             if (trk_pdg->at(hit_trk_id->at(ihit)) == 2112) h2_x_y_OFF_lead_n->Fill(hit_x->at(ihit),hit_y->at(ihit));
+             if (trk_pdg->at(hit_trk_id->at(ihit)) == 2212) h2_x_y_OFF_lead_p->Fill(hit_x->at(ihit),hit_y->at(ihit));
+           }
+           if (hit_vol_name->at(ihit).rfind("ffi_OFFM_TRK2_lay_Phys",0) == 0 ) { //OFF Momentum
+          // if (hit_vol_name->at(ihit).rfind("ffi_OFFM_TRK2_lay_Phys",0) == 0 ) { //OFF Momentum Tracker 2
+             if (trk_pdg->at(hit_trk_id->at(ihit)) == 2112) h2_x_y_OFF2_lead_n->Fill(hit_x->at(ihit),hit_y->at(ihit));
+             if (trk_pdg->at(hit_trk_id->at(ihit)) == 2212) h2_x_y_OFF2_lead_p->Fill(hit_x->at(ihit),hit_y->at(ihit));
+           }
+           if (hit_vol_name->at(ihit).rfind("fi_B0_TRK_lay_Phys",0) == 0 ) { //B0 Momentum
+          // if (hit_vol_name->at(ihit).rfind("fi_B0_TRK_lay_Phys",0) == 0 ) { //B0 Detector
+             if (trk_pdg->at(hit_trk_id->at(ihit)) == 2112) h2_x_y_B0_lead_n->Fill(hit_x->at(ihit),hit_y->at(ihit));
+             if (trk_pdg->at(hit_trk_id->at(ihit)) == 2212) h2_x_y_B0_lead_p->Fill(hit_x->at(ihit),hit_y->at(ihit));
            }
       //     if (hit_vol_name->at(ihit).rfind("fi_B0_TRK_lay_Phys",0) == 0 ) { //B0 Momentum
 
@@ -767,6 +795,21 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
             //     cout << "Roman x y " << hit_x->at(ihit)<< "  ,  " << hit_y->at(ihit)<< endl;
              }
              if (nn_track_exists == true)  h2_x_y_Roman1_nn_reco->Fill(hit_x->at(ihit),hit_y->at(ihit));
+           }
+           if (hit_vol_name->at(ihit).rfind("ffi_OFFM_TRK_lay_Phys",0) == 0 ) { //OFF Momentum
+          // if (hit_vol_name->at(ihit).rfind("ffi_OFFM_TRK_lay_Phys",0) == 0 ) { //OFF Momentum Tracker 1
+             if (trk_pdg->at(hit_trk_id->at(ihit)) == 2112) h2_x_y_OFF_reco_n->Fill(hit_x->at(ihit),hit_y->at(ihit));
+             if (trk_pdg->at(hit_trk_id->at(ihit)) == 2212) h2_x_y_OFF_reco_p->Fill(hit_x->at(ihit),hit_y->at(ihit));
+           }
+           if (hit_vol_name->at(ihit).rfind("ffi_OFFM_TRK2_lay_Phys",0) == 0 ) { //OFF Momentum
+          // if (hit_vol_name->at(ihit).rfind("ffi_OFFM_TRK2_lay_Phys",0) == 0 ) { //OFF Momentum Tracker 2
+             if (trk_pdg->at(hit_trk_id->at(ihit)) == 2112) h2_x_y_OFF2_reco_n->Fill(hit_x->at(ihit),hit_y->at(ihit));
+             if (trk_pdg->at(hit_trk_id->at(ihit)) == 2212) h2_x_y_OFF2_reco_p->Fill(hit_x->at(ihit),hit_y->at(ihit));
+           }
+           if (hit_vol_name->at(ihit).rfind("fi_B0_TRK_lay_Phys",0) == 0 ) { //B0 Momentum
+          // if (hit_vol_name->at(ihit).rfind("fi_B0_TRK_lay_Phys",0) == 0 ) { //B0 Detector
+             if (trk_pdg->at(hit_trk_id->at(ihit)) == 2112) h2_x_y_B0_reco_n->Fill(hit_x->at(ihit),hit_y->at(ihit));
+             if (trk_pdg->at(hit_trk_id->at(ihit)) == 2212) h2_x_y_B0_reco_p->Fill(hit_x->at(ihit),hit_y->at(ihit));
            }
         }
     }
@@ -971,45 +1014,60 @@ h1_recoil_accepted->Draw("SAME");
 //  h1_lead_n_names->LabelsOption("h","X");
 //  h1_lead_p_names->LabelsOption("h","X");
 
-  h2_x_y_ZDC_np_lead->Write();
+/*  h2_x_y_ZDC_np_lead->Write();
   h2_x_y_ZDC_np_reco->Write();
   h2_x_y_ZDC_pn_lead->Write();
   h2_x_y_ZDC_pn_reco->Write();
   h2_x_y_ZDC_nn_lead->Write();
   h2_x_y_ZDC_nn_reco->Write();
   h2_x_y_ZDC_pp_lead->Write();
-  h2_x_y_ZDC_pp_reco->Write();
+  h2_x_y_ZDC_pp_reco->Write();*/
   h2_x_y_ZDC_lead_n->Write();
   h2_x_y_ZDC_lead_p->Write();
   h2_x_y_ZDC_reco_n->Write();
   h2_x_y_ZDC_reco_p->Write();
 
-  h2_x_y_Roman1_np_lead->Write();
+  /*h2_x_y_Roman1_np_lead->Write();
   h2_x_y_Roman1_np_reco->Write();
   h2_x_y_Roman1_pn_lead->Write();
   h2_x_y_Roman1_pn_reco->Write();
   h2_x_y_Roman1_nn_lead->Write();
   h2_x_y_Roman1_nn_reco->Write();
   h2_x_y_Roman1_pp_lead->Write();
-  h2_x_y_Roman1_pp_reco->Write();
+  h2_x_y_Roman1_pp_reco->Write();*/
   h2_x_y_Roman1_lead_p->Write();
   h2_x_y_Roman1_lead_n->Write();
   h2_x_y_Roman1_reco_p->Write();
   h2_x_y_Roman1_reco_n->Write();
 
-  h2_x_y_Roman2_np->Write();
+//BO histos
+  h2_x_y_B0_lead_p->Write();
+  h2_x_y_B0_lead_n->Write();
+  h2_x_y_B0_reco_p->Write();
+  h2_x_y_B0_reco_n->Write();
+
+  //OFF momentum histos (2 detectors)
+  h2_x_y_OFF_lead_p->Write();
+  h2_x_y_OFF_lead_n->Write();
+  h2_x_y_OFF_reco_p->Write();
+  h2_x_y_OFF_reco_n->Write();
+  h2_x_y_OFF2_lead_p->Write();
+  h2_x_y_OFF2_lead_n->Write();
+  h2_x_y_OFF2_reco_p->Write();
+  h2_x_y_OFF2_reco_n->Write();
+  /*h2_x_y_Roman2_np->Write();
   h2_x_y_Roman2_pn->Write();
   h2_x_y_Roman3_np->Write();
   h2_x_y_Roman3_pn->Write();
   h2_x_y_Roman4_np->Write();
-  h2_x_y_Roman4_pn->Write();
+  h2_x_y_Roman4_pn->Write();*/
 //Pmiss histos
   h1_pmiss_generated->Write();
   h1_pmiss_n_generated->Write();
   h1_pmiss_p_generated->Write();
   h1_pmiss_accepted->Write();
   h1_pmiss_n_accepted->Write();
-  h1_pmiss_p_accepted->Write();  
+  h1_pmiss_p_accepted->Write();
 //Recoil momentum in IRF
   h1_recoil_generated->Write();
   h1_recoil_n_generated->Write();
