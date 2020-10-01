@@ -1,18 +1,20 @@
-void g4e_analysis (TString inputstring, int targetA, int setting)
+void g4e_analysis (TString inputstring, int targetA, int setting, double electronmomentum)
 {
   //This only works for older g4e version outputs
   bool debug = false;
+  bool fillhit = true;
+  double ZDC_r_cut = 250; //[mm]
   gStyle->SetOptStat(0);
   TFile *inputfile = new TFile(inputstring,"READ");
   TTree *evt_tree = (TTree*)inputfile->Get("events");
 
   TFile *output = new TFile("output.root","RECREATE");
   //make this dependent on file !!!!!
-  TLorentzVector ebeam_coll(0,0,-10,10);
+  TLorentzVector ebeam_coll(0,0,-electronmomentum,electronmomentum);
 
   int numberofevents = evt_tree->GetEntriesFast();
   numberofevents--; //Problem with last event in some files
-  //numberofevents = 50;
+  //numberofevents = 20;
   cout << "Number of events " << numberofevents << endl;
 
   double crossingangle = -0.025;
@@ -82,6 +84,16 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
   int n_lead_tracks = 0; //leading neutrons output track
   int p_reco_tracks = 0; //recoil protons output track
   int n_reco_tracks = 0; //recoil neutrons output track
+//Weigted counting
+  double p_lead_generated_weighted = 0; //leading protons
+  double n_lead_generated_weighted = 0; //leading neutrons
+  double p_reco_generated_weighted = 0; //recoil protons
+  double n_reco_generated_weighted = 0; //recoil neutrons
+  double p_lead_tracks_weighted = 0; //leading protons output track
+  double n_lead_tracks_weighted = 0; //leading neutrons output track
+  double p_reco_tracks_weighted = 0; //recoil protons output track
+  double n_reco_tracks_weighted = 0; //recoil neutrons output track
+
 
   //Event Infos
   ULong64_t event_id = 0;
@@ -320,13 +332,13 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
       }
 
       for (int hit = 0; hit < hit_count; hit++ ) {
-      // if (hit_trk_id->at(hit) == 2 || hit_trk_id->at(hit) == 3) {
+       if (hit_trk_id->at(hit) == 2 || hit_trk_id->at(hit) == 3) {
         cout << "Hit " << hit << " , hit_id " << hit_id->at(hit) << ", hit_trk_id: " << hit_trk_id->at(hit) ;
         cout << ", hit_ptr_id: " << hit_ptr_id->at(hit) ; // << ", hit_parent_trk_id: " << hit_parent_trk_id->at(hit) ;
 //cout << ", hit_i_rep: " << hit_i_rep->at(hit) << ", hit_j_rep: " << hit_j_rep->at(hit)  ;
         cout << ", hit_x: " << hit_x->at(hit) << ", hit_y: " << hit_y->at(hit) <<  ", hit_z: " << hit_z->at(hit) ;
         cout << ", hit_e_loss: " << hit_e_loss->at(hit) << ", hit_volname: " << hit_vol_name->at(hit) << endl ;
-    //   }  //c_str()
+       }  //c_str()
       }
     }
     //GenID 0 is electron, corresponding track ID is 1
@@ -366,12 +378,91 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
 */
     //Counting of pairs pp,np,pn,nn and single recoil/leading nucleons and how many are also in tracks
 
+
+//Determine by the hits if leading or recoil track is good
+    bool lead_track_good = false;
+    bool recoil_track_good = false;
+//For proton hits
+    int count_lead_hits_B0 = 0;
+    int count_lead_hits_OFF = 0;
+    int count_lead_hits_RP = 0;
+    int count_lead_central = 0;
+    int count_recoil_hits_B0 = 0;
+    int count_recoil_hits_OFF = 0;
+    int count_recoil_hits_RP = 0;
+
+    for (int ihit = 0 ; ihit < hit_count ; ihit++) {
+         if (hit_trk_id->at(ihit) == 2 && hit_ptr_id->at(ihit) == 2212   ) { //leading proton information
+          if (hit_vol_name->at(ihit).rfind("ffi_RPOT_D2_lay_Phys_",0) == 0 ) { //Roman Pot
+              count_lead_hits_RP++;
+          }
+          if (hit_vol_name->at(ihit).rfind("ffi_OFFM_TRK_lay_Phys",0) == 0 ) { //OFF Momentum
+              count_lead_hits_OFF++;
+          }
+          if (hit_vol_name->at(ihit).rfind("fi_B0_TRK_lay_Phys",0) == 0 ) { //B0 Momentum
+              count_lead_hits_B0++;
+          }
+          if (hit_vol_name->at(ihit).rfind("ci_",0) == 0 || hit_vol_name->at(ihit).rfind("cb_",0) == 0 || hit_vol_name->at(ihit).rfind("H_C",0) == 0 ) { //central hits
+              count_lead_central++;
+          }
+        }
+        if (hit_trk_id->at(ihit) == 2 && hit_ptr_id->at(ihit) == 2112  ) { //leading neutron information
+          if (hit_vol_name->at(ihit).rfind("ffi_ZDC_",0) == 0  ) { //ZDC for neutron
+              double xlocal = hit_x->at(ihit)-900; //units in mm
+              double ylocal = hit_y->at(ihit); //units in mm
+              double r = sqrt(xlocal*xlocal + ylocal*ylocal);
+              if (r < ZDC_r_cut)
+              {
+                    lead_track_good = true; //assume good leading neutron track if one ZDC hit
+              }
+          }
+        }
+        if (hit_trk_id->at(ihit) == 3 && hit_ptr_id->at(ihit) == 2212  ) { //recoil proton information
+          if (hit_vol_name->at(ihit).rfind("ffi_RPOT_D2_lay_Phys_",0) == 0 ) { //Roman Pot
+              count_recoil_hits_RP++;
+          }
+          if (hit_vol_name->at(ihit).rfind("ffi_OFFM_TRK_lay_Phys",0) == 0 ) { //OFF Momentum
+              count_recoil_hits_OFF++;
+          }
+          if (hit_vol_name->at(ihit).rfind("fi_B0_TRK_lay_Phys",0) == 0 ) { //B0 Momentum
+              count_recoil_hits_B0++;
+          }
+        }
+        if (hit_trk_id->at(ihit) == 3 && hit_ptr_id->at(ihit) == 2112  ) { //recoil neutron information
+          if (hit_vol_name->at(ihit).rfind("ffi_ZDC_",0) == 0 ) { //ZDC for neutron
+            double xlocal = hit_x->at(ihit)-900; //units in mm
+            double ylocal = hit_y->at(ihit); //units in mm
+            double r = sqrt(xlocal*xlocal + ylocal*ylocal);
+            if (r < ZDC_r_cut)
+            {
+                recoil_track_good = true; //assume good recoil neutron track if one ZDC hit
+            }
+
+          }
+        }
+    }
+
+  //  if (count_lead_hits_RP > 0 || count_lead_hits_B0 > 0 || count_lead_hits_OFF > 0) {
+  //    cout << "RP " <<  count_lead_hits_RP<< " , B0 " << count_lead_hits_B0<< " , OFF " << count_lead_hits_OFF << endl;
+  //  }
+    //Assign if good leading or recoil proton track based on number of hits in detectors (no central for leading protons)
+    if ( (count_lead_hits_RP > 2 || count_lead_hits_B0 > 3 || count_lead_hits_OFF > 1) && count_lead_central==0) {
+      lead_track_good = true; //good leading proton track
+    }
+    if (count_recoil_hits_RP > 2 || count_recoil_hits_B0 > 3 || count_recoil_hits_OFF > 1) {
+      recoil_track_good = true; //good recoil proton track
+    }
+    if (debug) {
+    cout << "Lead track good " << lead_track_good << " Recoil track good " << recoil_track_good << endl;
+    }
+
     bool lead_track_exists = false;
     bool recoil_track_exists = false;
     bool nn_track_exists = false;
     bool pp_track_exists = false;
     bool pn_track_exists = false;
     bool np_track_exists = false;
+
 
     TLorentzVector T4_lead_n_gen;
     TLorentzVector T4_lead_n_acc;
@@ -410,6 +501,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
 
     if (gen_prt_pdg->at(1) == 2112) { //leading is neutron
        n_lead_generated++;
+       n_lead_generated_weighted+= evt_weight;
        double lead_px = gen_prt_dir_x->at(1)*gen_prt_tot_mom->at(1);
        double lead_py = gen_prt_dir_y->at(1)*gen_prt_tot_mom->at(1);
        double lead_pz = gen_prt_dir_z->at(1)*gen_prt_tot_mom->at(1);
@@ -422,9 +514,10 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
        h1_lead_theta_generated_noweight->Fill(T4_lead_n_gen.Theta() * 1000);
 
        //Calculation of pmiss
-       T4_lead_n_gen.Boost(-boost_irf);
+       TLorentzVector T4_temp_lead_n_gen = T4_lead_n_gen;
+       T4_temp_lead_n_gen.Boost(-boost_irf);
        //Calculation of pmiss in IRF
-       TLorentzVector T4_pmiss_gen = q - T4_lead_n_gen;
+       TLorentzVector T4_pmiss_gen = q - T4_temp_lead_n_gen;
        double pmiss = T4_pmiss_gen.P();
        h1_pmiss_generated->Fill(pmiss, evt_weight); //all Recoils independently of type
 
@@ -441,9 +534,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
            tmp_track_recoil_pdg = trk_pdg->at(it);
          }
        }
-       if (lead_track_exists == true) {
+       if (lead_track_exists == true && lead_track_good == true) {
           n_lead_tracks++;
-
+          n_lead_tracks_weighted+= evt_weight;
           T4_lead_n_acc.SetPxPyPzE(lead_px,lead_py,lead_pz,lead_en);
           T4_lead_n_acc.RotateY(crossingangle);
           T4_lead_n_acc.Boost(boost_vector);
@@ -457,8 +550,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
          //nn events
          nn_generated++;
          n_reco_generated++;
+         n_reco_generated_weighted+= evt_weight;
          h1_pmiss_n_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil neuton
-         if (lead_track_exists == true) h1_pmiss_n_accepted->Fill(pmiss, evt_weight); //calculated pmiss for recoil neuton when leading is accepted
+         if (lead_track_exists == true && lead_track_good == true) h1_pmiss_n_accepted->Fill(pmiss, evt_weight); //calculated pmiss for recoil neuton when leading is accepted
 
          double px = gen_prt_dir_x->at(2)*gen_prt_tot_mom->at(2);
          double py = gen_prt_dir_y->at(2)*gen_prt_tot_mom->at(2);
@@ -477,12 +571,13 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
          h1_recoil_generated_noweight->Fill(T4_recoil_n_gen.Vect().Mag());
          h1_recoil_n_generated->Fill(T4_recoil_n_gen.Vect().Mag(), evt_weight);
          h1_recoil_generated->Fill(T4_recoil_n_gen.Vect().Mag(), evt_weight);
-         if (recoil_track_exists == true) { //independently if leading nucleon is also found in tracks
+         if (recoil_track_exists == true && recoil_track_good == true) { //independently if leading nucleon is also found in tracks
            if (tmp_track_recoil_pdg != gen_prt_pdg->at(2) ) {
              cout << "Event: " << i << " Mismatch track recoil PDG " << tmp_track_recoil_pdg << " and Generated PDG " << gen_prt_pdg->at(2) << endl;
              continue;
            }
            n_reco_tracks++;
+           n_reco_tracks_weighted+= evt_weight;
            T4_recoil_n_acc.SetPxPyPzE(px,py,pz,er);
            T4_recoil_n_acc.RotateY(crossingangle);
            T4_recoil_n_acc.Boost(boost_vector);
@@ -496,7 +591,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
            h1_recoil_accepted_noweight->Fill(T4_recoil_n_acc.Vect().Mag());
            h1_recoil_n_accepted->Fill(T4_recoil_n_acc.Vect().Mag(), evt_weight);
            h1_recoil_accepted->Fill(T4_recoil_n_acc.Vect().Mag(), evt_weight);
-           if (lead_track_exists == true) { //found both tracks of the nn pair
+           if (lead_track_exists == true && lead_track_good == true) { //found both tracks of the nn pair
               nn_tracks++;
               nn_track_exists = true;
            }
@@ -506,8 +601,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
          //np events
          np_generated++;
          p_reco_generated++;
+         p_reco_generated_weighted+= evt_weight;
          h1_pmiss_p_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil proton
-         if (lead_track_exists == true) h1_pmiss_p_accepted->Fill(pmiss, evt_weight); //calculated pmiss for recoil proton when leading is accepted
+         if (lead_track_exists == true && lead_track_good == true) h1_pmiss_p_accepted->Fill(pmiss, evt_weight); //calculated pmiss for recoil proton when leading is accepted
 
          double px = gen_prt_dir_x->at(2)*gen_prt_tot_mom->at(2);
          double py = gen_prt_dir_y->at(2)*gen_prt_tot_mom->at(2);
@@ -527,12 +623,13 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
          h1_recoil_generated_noweight->Fill(T4_recoil_p_gen.Vect().Mag());
          h1_recoil_p_generated->Fill(T4_recoil_p_gen.Vect().Mag(), evt_weight);
          h1_recoil_generated->Fill(T4_recoil_p_gen.Vect().Mag(), evt_weight);
-         if (recoil_track_exists == true) { //independently if leading nucleon is also found in tracks
+         if (recoil_track_exists == true && recoil_track_good == true) { //independently if leading nucleon is also found in tracks
            if (tmp_track_recoil_pdg != gen_prt_pdg->at(2) ) {
              cout << "Event: " << i << " Mismatch track recoil PDG " << tmp_track_recoil_pdg << " and Generated PDG " << gen_prt_pdg->at(2) << endl;
              continue;
            }
            p_reco_tracks++;
+           p_reco_tracks_weighted+= evt_weight;
            T4_recoil_p_acc.SetPxPyPzE(px,py,pz,er);
            T4_recoil_p_acc.RotateY(crossingangle);
            T4_recoil_p_acc.Boost(boost_vector);
@@ -545,7 +642,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
            h1_recoil_accepted_noweight->Fill(T4_recoil_p_acc.Vect().Mag());
            h1_recoil_p_accepted->Fill(T4_recoil_p_acc.Vect().Mag(), evt_weight);
            h1_recoil_accepted->Fill(T4_recoil_p_acc.Vect().Mag(), evt_weight);
-           if (lead_track_exists == true) { //found both tracks of the np pair
+           if (lead_track_exists == true && lead_track_good == true) { //found both tracks of the np pair
               np_tracks++;
               np_track_exists = true;
            }
@@ -554,6 +651,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
     }
     if (gen_prt_pdg->at(1) == 2212) { //leading is proton
        p_lead_generated++;
+       p_lead_generated_weighted+= evt_weight;
        double lead_px = gen_prt_dir_x->at(1)*gen_prt_tot_mom->at(1);
        double lead_py = gen_prt_dir_y->at(1)*gen_prt_tot_mom->at(1);
        double lead_pz = gen_prt_dir_z->at(1)*gen_prt_tot_mom->at(1);
@@ -566,9 +664,10 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
        h1_lead_theta_generated_noweight->Fill(T4_lead_p_gen.Theta() * 1000);
 
        //Calculation of pmiss
-       T4_lead_p_gen.Boost(-boost_irf);
+       TLorentzVector T4_temp_lead_p_gen = T4_lead_p_gen;
+       T4_temp_lead_p_gen.Boost(-boost_irf);
        //Calculation of pmiss in IRF
-       TLorentzVector T4_pmiss_gen = q - T4_lead_p_gen;
+       TLorentzVector T4_pmiss_gen = q - T4_temp_lead_p_gen;
        double pmiss = T4_pmiss_gen.P();
        h1_pmiss_generated->Fill(pmiss, evt_weight); //all Recoils independently of type
 
@@ -585,8 +684,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
            tmp_track_recoil_pdg = trk_pdg->at(it);
          }
        }
-       if (lead_track_exists == true) {
+       if (lead_track_exists == true && lead_track_good == true) {
           p_lead_tracks++;
+          p_lead_tracks_weighted+= evt_weight;
 
           T4_lead_p_acc.SetPxPyPzE(lead_px,lead_py,lead_pz,lead_en);
           T4_lead_p_acc.RotateY(crossingangle);
@@ -602,8 +702,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
          //pn events
          pn_generated++;
          n_reco_generated++;
+         n_reco_generated_weighted+= evt_weight;
          h1_pmiss_n_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil neuton
-         if (lead_track_exists == true) h1_pmiss_n_accepted->Fill(pmiss, evt_weight); //calculated pmiss for recoil neuton when leading is accepted
+         if (lead_track_exists == true && lead_track_good == true) h1_pmiss_n_accepted->Fill(pmiss, evt_weight); //calculated pmiss for recoil neuton when leading is accepted
 
          double px = gen_prt_dir_x->at(2)*gen_prt_tot_mom->at(2);
          double py = gen_prt_dir_y->at(2)*gen_prt_tot_mom->at(2);
@@ -624,12 +725,13 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
          h1_recoil_generated->Fill(T4_recoil_n_gen.Vect().Mag(), evt_weight);
 
 
-         if (recoil_track_exists == true) { //independently if leading nucleon is also found in tracks
+         if (recoil_track_exists == true && recoil_track_good == true) { //independently if leading nucleon is also found in tracks
            if (tmp_track_recoil_pdg != gen_prt_pdg->at(2) ) {
              cout << "Event: " << i << " Mismatch track recoil PDG " << tmp_track_recoil_pdg << " and Generated PDG " << gen_prt_pdg->at(2) << endl;
              continue;
            }
            n_reco_tracks++;
+           n_reco_tracks_weighted+= evt_weight;
            T4_recoil_n_acc.SetPxPyPzE(px,py,pz,er);
            T4_recoil_n_acc.RotateY(crossingangle);
            T4_recoil_n_acc.Boost(boost_vector);
@@ -642,7 +744,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
            h1_recoil_accepted_noweight->Fill(T4_recoil_n_acc.Vect().Mag());
            h1_recoil_n_accepted->Fill(T4_recoil_n_acc.Vect().Mag(), evt_weight);
            h1_recoil_accepted->Fill(T4_recoil_n_acc.Vect().Mag(), evt_weight);
-           if (lead_track_exists == true) { //found both tracks of the pn pair
+           if (lead_track_exists == true && lead_track_good == true) { //found both tracks of the pn pair
               pn_tracks++;
               pn_track_exists = true;
            }
@@ -652,8 +754,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
          //pp events
          pp_generated++;
          p_reco_generated++;
+         p_reco_generated_weighted+= evt_weight;
          h1_pmiss_p_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil proton
-         if (lead_track_exists == true) h1_pmiss_p_accepted->Fill(pmiss, evt_weight); //calculated pmiss for recoil proton when leading is accepted
+         if (lead_track_exists == true && lead_track_good == true) h1_pmiss_p_accepted->Fill(pmiss, evt_weight); //calculated pmiss for recoil proton when leading is accepted
 
          double px = gen_prt_dir_x->at(2)*gen_prt_tot_mom->at(2);
          double py = gen_prt_dir_y->at(2)*gen_prt_tot_mom->at(2);
@@ -674,12 +777,13 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
          h1_recoil_generated->Fill(T4_recoil_p_gen.Vect().Mag(), evt_weight);
 
 
-         if (recoil_track_exists == true) { //independently if leading nucleon is also found in tracks
+         if (recoil_track_exists == true && recoil_track_good == true) { //independently if leading nucleon is also found in tracks
            if (tmp_track_recoil_pdg != gen_prt_pdg->at(2) ) {
              cout << "Event: " << i << " Mismatch track recoil PDG " << tmp_track_recoil_pdg << " and Generated PDG " << gen_prt_pdg->at(2) << endl;
              continue;
            }
            p_reco_tracks++;
+           p_reco_tracks_weighted+= evt_weight;
            T4_recoil_p_acc.SetPxPyPzE(px,py,pz,er);
            T4_recoil_p_acc.RotateY(crossingangle);
            T4_recoil_p_acc.Boost(boost_vector);
@@ -692,7 +796,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
            h1_recoil_accepted_noweight->Fill(T4_recoil_p_acc.Vect().Mag());
            h1_recoil_p_accepted->Fill(T4_recoil_p_acc.Vect().Mag(), evt_weight);
            h1_recoil_accepted->Fill(T4_recoil_p_acc.Vect().Mag(), evt_weight);
-           if (lead_track_exists == true) { //found both tracks of the pp pair
+           if (lead_track_exists == true && lead_track_good == true) { //found both tracks of the pp pair
               pp_tracks++;
               pp_track_exists = true;
            }
@@ -702,7 +806,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
 
 
 
-
+   if (fillhit) {
     //Hit fill
     for (int ihit = 0 ; ihit < hit_count ; ihit++) {
         if (hit_trk_id->at(ihit) == 2 && lead_track_exists) { //leading information
@@ -812,8 +916,8 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
              if (trk_pdg->at(hit_trk_id->at(ihit)) == 2212) h2_x_y_B0_reco_p->Fill(hit_x->at(ihit),hit_y->at(ihit));
            }
         }
-    }
-
+     }
+   } //if hit fill
 
     /*  if (gen_prt_pdg->at(1) == 2112 && gen_prt_pdg->at(2) == 2212) { //leading is neutron and recoil  is proton
       //  cout << " FOund np event" << endl;
@@ -881,19 +985,28 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
   double p_reco_ratio = p_reco_tracks / (double)p_reco_generated;
   double n_reco_ratio = n_reco_tracks / (double)n_reco_generated;
 
+  double p_lead_weighted_ratio = p_lead_tracks_weighted / p_lead_generated_weighted;
+  double n_lead_weighted_ratio = n_lead_tracks_weighted / n_lead_generated_weighted;
+  double p_reco_weighted_ratio = p_reco_tracks_weighted / p_reco_generated_weighted;
+  double n_reco_weighted_ratio = n_reco_tracks_weighted / n_reco_generated_weighted;
+
 
   cout << " Generated pp events " << pp_generated << " and #events with pp tracks " << pp_tracks << " = " << pp_ratio*100 << endl;
   cout << " Generated pn events " << pn_generated << " and #events with pn tracks " << pn_tracks << " = " << pn_ratio*100 << endl;
   cout << " Generated nn events " << nn_generated << " and #events with nn tracks " << nn_tracks << " = " << nn_ratio*100 << endl;
   cout << " Generated np events " << np_generated << " and #events with np tracks " << np_tracks << " = " << np_ratio*100 << endl;
   cout << " Generated Leading protons "  << p_lead_generated;
-  cout << " and #events with lead p tracks " << p_lead_tracks << " = " << p_lead_ratio*100 << endl;
-  cout << " Generated Leading neutrons " << n_lead_generated;
-  cout << " and #events with lead n tracks " << n_lead_tracks << " = " << n_lead_ratio*100 << endl;
+  cout << " and #events with lead p tracks " << p_lead_tracks << " = " << p_lead_ratio*100;
+  cout << " and with weights ratio = " << p_lead_weighted_ratio*100 << endl;
+  cout << " Generated Leading neutrons " << n_lead_generated ;
+  cout << " and #events with lead n tracks " << n_lead_tracks << " = " << n_lead_ratio*100;
+  cout << " and with weights ratio = " << n_lead_weighted_ratio*100 << endl;
   cout << " Generated Recoil protons "   << p_reco_generated;
-  cout << " and #events with recoil p tracks " << p_reco_tracks << " = " << p_reco_ratio*100 << endl;
+  cout << " and #events with recoil p tracks " << p_reco_tracks << " = " << p_reco_ratio*100;
+  cout << " and with weights ratio = " << p_reco_weighted_ratio*100 << endl;
   cout << " Generated Recoil neutrons "  << n_reco_generated;
-  cout << " and #events with recoil n tracks " << n_reco_tracks << " = " << n_reco_ratio*100 << endl;
+  cout << " and #events with recoil n tracks " << n_reco_tracks << " = " << n_reco_ratio*100;
+  cout << " and with weights ratio = " << n_reco_weighted_ratio*100 << endl;
 
   /*TCanvas *c1 = new TCanvas("c1","Number");
   c1->Divide(2,2);
