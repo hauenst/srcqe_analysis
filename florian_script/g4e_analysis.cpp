@@ -205,7 +205,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
   TH1F *h1_recoil_theta_accepted_noweight  = new TH1F("h1_recoil_theta_accepted_noweight","Theta accepted recoil (no weight)",80,0,80);
   TH1F *h1_lead_theta_generated_noweight   = new TH1F("h1_lead_theta_generated_noweight","Theta generated leading (no weight)",80,0,80);
   TH1F *h1_lead_theta_accepted_noweight    = new TH1F("h1_lead_theta_accepted_noweight","Theta accepted leading (no weight)",80,0,80);
-   //Histo for pmiss acceptance
+   //Histo for pIRF acceptance
   TH1F *h1_recoil_generated = new TH1F("h1_recoil_generated","P_irf generated recoil",100,0,2);
   TH1F *h1_recoil_n_generated = new TH1F("h1_recoil_n_generated","P_irf generated neutron",100,0,2);
   TH1F *h1_recoil_p_generated = new TH1F("h1_recoil_p_generated","P_irf generated proton",100,0,2);
@@ -219,6 +219,16 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
   TH1F *h1_recoil_accepted_noweight   = new TH1F("h1_recoil_accepted_noweight","P_irf accepted recoil",200,0,2);
   TH1F *h1_recoil_n_accepted_noweight = new TH1F("h1_recoil_n_accepted_noweight","P_irf accepted neutron",200,0,2);
   TH1F *h1_recoil_p_accepted_noweight = new TH1F("h1_recoil_p_accepted_noweight","P_irf accepted proton",200,0,2);
+
+  //Histo for pmiss acceptance
+ TH1F *h1_pmiss_generated = new TH1F("h1_pmiss_generated","Pmiss generated recoil",100,0,2);
+ TH1F *h1_pmiss_n_generated = new TH1F("h1_pmiss_n_generated","Pmiss generated neutron",100,0,2);
+ TH1F *h1_pmiss_p_generated = new TH1F("h1_pmiss_p_generated","Pmiss generated proton",100,0,2);
+ TH1F *h1_pmiss_accepted = new TH1F("h1_pmiss_accepted","Pmiss accepted recoil",100,0,2);
+ TH1F *h1_pmiss_n_accepted = new TH1F("h1_pmiss_n_accepted","Pmiss accepted neutron",100,0,2);
+ TH1F *h1_pmiss_p_accepted = new TH1F("h1_pmiss_p_accepted","Pmiss accepted proton",100,0,2);
+
+
 //ffi_RPOT_D2_lay
 //fi_D1_TRK_
 //ffi_ZDC_
@@ -395,9 +405,12 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
        h1_lead_theta_n_generated->Fill(T4_lead_n_gen.Theta() * 1000, evt_weight);
        h1_lead_theta_generated_noweight->Fill(T4_lead_n_gen.Theta() * 1000);
 
-       ////Calculating pmiss in IRF
-       //TLorentzVector v4_pmiss = q - leading_nucleon;
-       //double pmiss = v4_pmiss.P();
+       //Calculation of pmiss
+       T4_lead_n_gen.Boost(-boost_irf);
+       //Calculation of pmiss in IRF
+       TLorentzVector T4_pmiss_gen = q - T4_lead_n_gen;
+       double pmiss = T4_pmiss_gen.P();
+       h1_pmiss_generated->Fill(pmiss, evt_weight); //all Recoils independently of type
 
        int tmp_track_recoil_pdg = 0;
        for (int it = 0; it < trk_count; it++) {
@@ -421,12 +434,16 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
           h1_lead_theta_accepted->Fill(T4_lead_n_gen.Theta() * 1000, evt_weight);
           h1_lead_theta_n_accepted->Fill(T4_lead_n_gen.Theta() * 1000, evt_weight);
           h1_lead_theta_accepted_noweight->Fill(T4_lead_n_gen.Theta() * 1000);
+          h1_pmiss_accepted->Fill(pmiss, evt_weight); //all Recoils independently of type if leading is accepted
         }
 
        if (gen_prt_pdg->at(2) == 2112) { //recoil is neutron
          //nn events
          nn_generated++;
          n_reco_generated++;
+         h1_pmiss_n_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil neuton
+         if (lead_track_exists == true) h1_pmiss_n_accepted->Fill(pmiss, evt_weight); //calculated pmiss for recoil neuton when leading is accepted
+
          double px = gen_prt_dir_x->at(2)*gen_prt_tot_mom->at(2);
          double py = gen_prt_dir_y->at(2)*gen_prt_tot_mom->at(2);
          double pz = gen_prt_dir_z->at(2)*gen_prt_tot_mom->at(2);
@@ -473,6 +490,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
          //np events
          np_generated++;
          p_reco_generated++;
+         h1_pmiss_p_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil proton
+         if (lead_track_exists == true) h1_pmiss_p_accepted->Fill(pmiss, evt_weight); //calculated pmiss for recoil proton when leading is accepted
+
          double px = gen_prt_dir_x->at(2)*gen_prt_tot_mom->at(2);
          double py = gen_prt_dir_y->at(2)*gen_prt_tot_mom->at(2);
          double pz = gen_prt_dir_z->at(2)*gen_prt_tot_mom->at(2);
@@ -528,6 +548,14 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
        h1_lead_theta_generated->Fill(T4_lead_p_gen.Theta() * 1000, evt_weight);
        h1_lead_theta_p_generated->Fill(T4_lead_p_gen.Theta() * 1000, evt_weight);
        h1_lead_theta_generated_noweight->Fill(T4_lead_p_gen.Theta() * 1000);
+
+       //Calculation of pmiss
+       T4_lead_p_gen.Boost(-boost_irf);
+       //Calculation of pmiss in IRF
+       TLorentzVector T4_pmiss_gen = q - T4_lead_p_gen;
+       double pmiss = T4_pmiss_gen.P();
+       h1_pmiss_generated->Fill(pmiss, evt_weight); //all Recoils independently of type
+
        int tmp_track_recoil_pdg = 0;
        for (int it = 0; it < trk_count; it++) {
          if (trk_id->at(it) == 2 && trk_id->at(it) == gen_prt_trk_id->at(1)) { //check if leading track id exists and corresponds to track id assigned to generated particle
@@ -550,6 +578,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
           h1_lead_theta_accepted->Fill(T4_lead_p_gen.Theta() * 1000, evt_weight);
           h1_lead_theta_p_accepted->Fill(T4_lead_p_gen.Theta() * 1000, evt_weight);
           h1_lead_theta_accepted_noweight->Fill(T4_lead_p_gen.Theta() * 1000);
+          h1_pmiss_accepted->Fill(pmiss, evt_weight); //all Recoils independently of type if leading is accepted
         }
 
 
@@ -557,6 +586,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
          //pn events
          pn_generated++;
          n_reco_generated++;
+         h1_pmiss_n_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil neuton
+         if (lead_track_exists == true) h1_pmiss_n_accepted->Fill(pmiss, evt_weight); //calculated pmiss for recoil neuton when leading is accepted
+
          double px = gen_prt_dir_x->at(2)*gen_prt_tot_mom->at(2);
          double py = gen_prt_dir_y->at(2)*gen_prt_tot_mom->at(2);
          double pz = gen_prt_dir_z->at(2)*gen_prt_tot_mom->at(2);
@@ -574,6 +606,8 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
          h1_recoil_generated_noweight->Fill(T4_recoil_n_gen.Vect().Mag());
          h1_recoil_n_generated->Fill(T4_recoil_n_gen.Vect().Mag(), evt_weight);
          h1_recoil_generated->Fill(T4_recoil_n_gen.Vect().Mag(), evt_weight);
+
+
          if (recoil_track_exists == true) { //independently if leading nucleon is also found in tracks
            if (tmp_track_recoil_pdg != gen_prt_pdg->at(2) ) {
              cout << "Event: " << i << " Mismatch track recoil PDG " << tmp_track_recoil_pdg << " and Generated PDG " << gen_prt_pdg->at(2) << endl;
@@ -602,6 +636,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
          //pp events
          pp_generated++;
          p_reco_generated++;
+         h1_pmiss_p_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil proton
+         if (lead_track_exists == true) h1_pmiss_p_accepted->Fill(pmiss, evt_weight); //calculated pmiss for recoil proton when leading is accepted
+
          double px = gen_prt_dir_x->at(2)*gen_prt_tot_mom->at(2);
          double py = gen_prt_dir_y->at(2)*gen_prt_tot_mom->at(2);
          double pz = gen_prt_dir_z->at(2)*gen_prt_tot_mom->at(2);
@@ -619,6 +656,8 @@ void g4e_analysis (TString inputstring, int targetA, int setting)
          h1_recoil_generated_noweight->Fill(T4_recoil_p_gen.Vect().Mag());
          h1_recoil_p_generated->Fill(T4_recoil_p_gen.Vect().Mag(), evt_weight);
          h1_recoil_generated->Fill(T4_recoil_p_gen.Vect().Mag(), evt_weight);
+
+
          if (recoil_track_exists == true) { //independently if leading nucleon is also found in tracks
            if (tmp_track_recoil_pdg != gen_prt_pdg->at(2) ) {
              cout << "Event: " << i << " Mismatch track recoil PDG " << tmp_track_recoil_pdg << " and Generated PDG " << gen_prt_pdg->at(2) << endl;
@@ -964,6 +1003,13 @@ h1_recoil_accepted->Draw("SAME");
   h2_x_y_Roman3_pn->Write();
   h2_x_y_Roman4_np->Write();
   h2_x_y_Roman4_pn->Write();
+//Pmiss histos
+  h1_pmiss_generated->Write();
+  h1_pmiss_n_generated->Write();
+  h1_pmiss_p_generated->Write();
+  h1_pmiss_accepted->Write();
+  h1_pmiss_n_accepted->Write();
+  h1_pmiss_p_accepted->Write();  
 //Recoil momentum in IRF
   h1_recoil_generated->Write();
   h1_recoil_n_generated->Write();
