@@ -8,7 +8,43 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
   TFile *inputfile = new TFile(inputstring,"READ");
   TTree *evt_tree = (TTree*)inputfile->Get("events");
 
-  TFile *output = new TFile("output.root","RECREATE");
+  TFile *output  = new TFile("output.root","RECREATE");
+  TTree *outtree = new TTree("skim","skimmed g4e for acceptance");
+
+  //Values for Output tree
+  double skim_weight;
+  TLorentzVector skim_electron;
+  TLorentzVector skim_leading;
+  TLorentzVector skim_recoil;
+  int skim_pid_lead = 0;
+  int skim_pid_recoil = 0;
+  double skim_ebeam_mom = 0;
+  int skim_targetA = 0;;
+  int skim_targetZ = 0;
+  double skim_targetmass= 0;
+  double skim_ionenergy = 0;
+  int skim_pp_pair = 0;
+  int skim_pn_pair = 0;
+  int skim_np_pair = 0;
+  int skim_nn_pair = 0;
+
+  //Define outtree Branches
+  outtree->Branch("weight", &skim_weight);
+  outtree->Branch("electron", &skim_electron);
+  outtree->Branch("leading", &skim_leading);
+  outtree->Branch("recoil", &skim_recoil);
+  outtree->Branch("pid_leading", &skim_pid_lead);
+  outtree->Branch("pid_recoil", &skim_pid_recoil);
+  outtree->Branch("ebeam_mom", &skim_pid_recoil);
+  outtree->Branch("target_A", &skim_targetA);
+  outtree->Branch("target_Z", &skim_targetZ);
+  outtree->Branch("target_mass", &skim_targetmass);
+  outtree->Branch("ionenergy", &skim_ionenergy);
+  outtree->Branch("pp_pair_accept", &skim_pp_pair);
+  outtree->Branch("np_pair_accept", &skim_np_pair);
+  outtree->Branch("pn_pair_accept", &skim_pn_pair);
+  outtree->Branch("nn_pair_accept", &skim_nn_pair);
+
   //make this dependent on file !!!!!
   TLorentzVector ebeam_coll(0,0,-electronmomentum,electronmomentum);
 
@@ -93,6 +129,14 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
   double n_lead_tracks_weighted = 0; //leading neutrons output track
   double p_reco_tracks_weighted = 0; //recoil protons output track
   double n_reco_tracks_weighted = 0; //recoil neutrons output track
+  double pp_generated_weighted = 0;
+  double nn_generated_weighted = 0;
+  double np_generated_weighted = 0; //leading neutron and recoil proton
+  double pn_generated_weighted = 0; //leading proton and recoil neutron
+  double pp_tracks_weighted = 0; //leading proton and recoil proton tracks in event
+  double nn_tracks_weighted = 0; //leading neutron and recoil neutron tracks in event
+  double np_tracks_weighted = 0; //leading neutron and recoil proton tracks in event
+  double pn_tracks_weighted = 0; //leading proton and recoil neutron tracks in event
 
 
   //Event Infos
@@ -181,9 +225,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
   evt_tree->SetBranchAddress("trk_level",&trk_level);
   evt_tree->SetBranchAddress("trk_mom",&trk_mom);
 
-  TH1F *h1_Q2  = new TH1F("h1_Q2","Q2 distribution",80,0,20);
+  TH1F *h1_Q2  = new TH1F("h1_Q2","Q2 distribution",40,0,20);
   TH1F *h1_x = new TH1F("h1_x","x distribution",68,0.8,2.5);
-  TH2F *h2_Q2_x = new TH2F("h2_Q2_x","Q2 versus x",80,1,21,24,1,2.2);
+  TH2F *h2_Q2_x = new TH2F("h2_Q2_x","Q2 versus x",40,1,21,24,1,2.2);
 
 
   TH1F *h1_hits_count = new TH1F("h1_hits_count","",60,0,600);
@@ -200,23 +244,23 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
   TH2F *h2_reco_mom_theta = new TH2F("h2_reco_mom_theta","Recoil nucleon mom-theta dist. (no weight)",50,0,100,50,0,100);
   TH2F *h2_reco_mom_theta_accepted = new TH2F("h2_reco_mom_theta_accepted","Recoil nucleon mom-theta dist. accepted (no weight)",50,0,100,50,0,100);
   //Histo for theta acceptance
-  TH1F *h1_recoil_theta_generated = new TH1F("h1_recoil_theta_generated","Theta generated recoil",80,0,80);
-  TH1F *h1_recoil_theta_n_generated = new TH1F("h1_recoil_theta_n_generated","Theta generated neutron",80,0,80);
-  TH1F *h1_recoil_theta_p_generated = new TH1F("h1_recoil_theta_p_generated","Theta generated proton",80,0,80);
-  TH1F *h1_recoil_theta_accepted = new TH1F("h1_recoil_theta_accepted","Theta accepted recoil",80,0,80);
-  TH1F *h1_recoil_theta_n_accepted = new TH1F("h1_recoil_theta_n_accepted","Theta accepted neutron",80,0,80);
-  TH1F *h1_recoil_theta_p_accepted = new TH1F("h1_recoil_theta_p_accepted","Theta accepted proton",80,0,80);
-  TH1F *h1_lead_theta_generated = new TH1F("h1_lead_theta_generated","Theta generated leading",80,0,80);
-  TH1F *h1_lead_theta_n_generated = new TH1F("h1_lead_theta_n_generated","Theta generated neutron",80,0,80);
-  TH1F *h1_lead_theta_p_generated = new TH1F("h1_lead_theta_p_generated","Theta generated proton",80,0,80);
-  TH1F *h1_lead_theta_accepted = new TH1F("h1_lead_theta_accepted","Theta accepted leading",80,0,80);
-  TH1F *h1_lead_theta_n_accepted = new TH1F("h1_lead_theta_n_accepted","Theta accepted neutron",80,0,80);
-  TH1F *h1_lead_theta_p_accepted = new TH1F("h1_lead_theta_p_accepted","Theta accepted proton",80,0,80);
+  TH1F *h1_recoil_theta_generated = new TH1F("h1_recoil_theta_generated","Theta generated recoil",160,0,80);
+  TH1F *h1_recoil_theta_n_generated = new TH1F("h1_recoil_theta_n_generated","Theta generated neutron",160,0,80);
+  TH1F *h1_recoil_theta_p_generated = new TH1F("h1_recoil_theta_p_generated","Theta generated proton",160,0,80);
+  TH1F *h1_recoil_theta_accepted = new TH1F("h1_recoil_theta_accepted","Theta accepted recoil",160,0,80);
+  TH1F *h1_recoil_theta_n_accepted = new TH1F("h1_recoil_theta_n_accepted","Theta accepted neutron",160,0,80);
+  TH1F *h1_recoil_theta_p_accepted = new TH1F("h1_recoil_theta_p_accepted","Theta accepted proton",160,0,80);
+  TH1F *h1_lead_theta_generated = new TH1F("h1_lead_theta_generated","Theta generated leading",160,0,80);
+  TH1F *h1_lead_theta_n_generated = new TH1F("h1_lead_theta_n_generated","Theta generated neutron",160,0,80);
+  TH1F *h1_lead_theta_p_generated = new TH1F("h1_lead_theta_p_generated","Theta generated proton",160,0,80);
+  TH1F *h1_lead_theta_accepted = new TH1F("h1_lead_theta_accepted","Theta accepted leading",160,0,80);
+  TH1F *h1_lead_theta_n_accepted = new TH1F("h1_lead_theta_n_accepted","Theta accepted neutron",160,0,80);
+  TH1F *h1_lead_theta_p_accepted = new TH1F("h1_lead_theta_p_accepted","Theta accepted proton",160,0,80);
 
-  TH1F *h1_recoil_theta_generated_noweight = new TH1F("h1_recoil_theta_generated_noweight","Theta generated recoil (no weight)",80,0,80);
-  TH1F *h1_recoil_theta_accepted_noweight  = new TH1F("h1_recoil_theta_accepted_noweight","Theta accepted recoil (no weight)",80,0,80);
-  TH1F *h1_lead_theta_generated_noweight   = new TH1F("h1_lead_theta_generated_noweight","Theta generated leading (no weight)",80,0,80);
-  TH1F *h1_lead_theta_accepted_noweight    = new TH1F("h1_lead_theta_accepted_noweight","Theta accepted leading (no weight)",80,0,80);
+  TH1F *h1_recoil_theta_generated_noweight = new TH1F("h1_recoil_theta_generated_noweight","Theta generated recoil (no weight)",160,0,80);
+  TH1F *h1_recoil_theta_accepted_noweight  = new TH1F("h1_recoil_theta_accepted_noweight","Theta accepted recoil (no weight)",160,0,80);
+  TH1F *h1_lead_theta_generated_noweight   = new TH1F("h1_lead_theta_generated_noweight","Theta generated leading (no weight)",160,0,80);
+  TH1F *h1_lead_theta_accepted_noweight    = new TH1F("h1_lead_theta_accepted_noweight","Theta accepted leading (no weight)",160,0,80);
    //Histo for pIRF acceptance
   TH1F *h1_recoil_generated = new TH1F("h1_recoil_generated","P_irf generated recoil",100,0,2);
   TH1F *h1_recoil_n_generated = new TH1F("h1_recoil_n_generated","P_irf generated neutron",100,0,2);
@@ -233,12 +277,12 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
   TH1F *h1_recoil_p_accepted_noweight = new TH1F("h1_recoil_p_accepted_noweight","P_irf accepted proton",200,0,2);
 
   //Histo for pmiss acceptance
- TH1F *h1_pmiss_generated = new TH1F("h1_pmiss_generated","Pmiss generated recoil",100,0,2);
- TH1F *h1_pmiss_n_generated = new TH1F("h1_pmiss_n_generated","Pmiss generated neutron",100,0,2);
- TH1F *h1_pmiss_p_generated = new TH1F("h1_pmiss_p_generated","Pmiss generated proton",100,0,2);
- TH1F *h1_pmiss_accepted = new TH1F("h1_pmiss_accepted","Pmiss accepted recoil",100,0,2);
- TH1F *h1_pmiss_n_accepted = new TH1F("h1_pmiss_n_accepted","Pmiss accepted neutron",100,0,2);
- TH1F *h1_pmiss_p_accepted = new TH1F("h1_pmiss_p_accepted","Pmiss accepted proton",100,0,2);
+ TH1F *h1_pmiss_generated = new TH1F("h1_pmiss_generated","Pmiss generated recoil",50,0,2);
+ TH1F *h1_pmiss_n_generated = new TH1F("h1_pmiss_n_generated","Pmiss generated neutron",50,0,2);
+ TH1F *h1_pmiss_p_generated = new TH1F("h1_pmiss_p_generated","Pmiss generated proton",50,0,2);
+ TH1F *h1_pmiss_accepted = new TH1F("h1_pmiss_accepted","Pmiss accepted recoil",50,0,2);
+ TH1F *h1_pmiss_n_accepted = new TH1F("h1_pmiss_n_accepted","Pmiss accepted neutron",50,0,2);
+ TH1F *h1_pmiss_p_accepted = new TH1F("h1_pmiss_p_accepted","Pmiss accepted proton",50,0,2);
 
 
 //ffi_RPOT_D2_lay
@@ -295,6 +339,31 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
 */
   //TH1F *h1_gen_pdg_one = new TH1F("h1_gen_pdg_one","",20,0,20);
   for (int i = 0; i < numberofevents; i++) {
+
+    //Clear values for outtree Branches
+    skim_weight = 0;
+    skim_electron.Clear();
+    skim_leading.Clear();
+    skim_recoil.Clear();
+    skim_pid_lead = 0;
+    skim_pid_recoil = 0;
+    skim_ebeam_mom = 0;
+    skim_targetA = 0;;
+    skim_targetZ = 0;
+    skim_targetmass= 0;
+    skim_ionenergy = 0;
+    skim_pp_pair = 0;
+    skim_pn_pair = 0;
+    skim_np_pair = 0;
+    skim_nn_pair = 0;
+
+    //Set target and momentum for output Tree
+    skim_ebeam_mom = electronmomentum;
+    skim_targetA    = targetA;
+    skim_targetZ    = targetZ;
+    skim_targetmass = mass_target;
+    skim_ionenergy  = ionenergy;
+
 //  for (int i = 0; i < 100; i++) {
     evt_tree->GetEntry(i);
   //  if (i < 1000 && hit_vol_name->at(2).rfind("ffi_RPOT_D2_lay",0) == 0 ) {
@@ -497,9 +566,12 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
 
     }
 
-
+    //Set electron values for outtree ( from lab system) and weight
+    skim_electron.SetPxPyPzE(ele_px,ele_py,ele_pz,ele_en);
+    skim_weight = evt_weight;
 
     if (gen_prt_pdg->at(1) == 2112) { //leading is neutron
+       skim_pid_lead = 2112;
        n_lead_generated++;
        n_lead_generated_weighted+= evt_weight;
        double lead_px = gen_prt_dir_x->at(1)*gen_prt_tot_mom->at(1);
@@ -512,6 +584,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
        h1_lead_theta_generated->Fill(T4_lead_n_gen.Theta() * 1000, evt_weight);
        h1_lead_theta_n_generated->Fill(T4_lead_n_gen.Theta() * 1000, evt_weight);
        h1_lead_theta_generated_noweight->Fill(T4_lead_n_gen.Theta() * 1000);
+
+       //output tree info in lab frame
+       skim_leading.SetPxPyPzE(lead_px,lead_py,lead_pz,lead_en);
 
        //Calculation of pmiss
        TLorentzVector T4_temp_lead_n_gen = T4_lead_n_gen;
@@ -547,8 +622,10 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
         }
 
        if (gen_prt_pdg->at(2) == 2112) { //recoil is neutron
+         skim_pid_recoil = 2112;
          //nn events
          nn_generated++;
+         nn_generated_weighted=+ evt_weight;
          n_reco_generated++;
          n_reco_generated_weighted+= evt_weight;
          h1_pmiss_n_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil neuton
@@ -566,6 +643,10 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
          h1_recoil_theta_n_generated->Fill(T4_recoil_n_gen.Theta() * 1000, evt_weight);
          h1_recoil_theta_generated_noweight->Fill(T4_recoil_n_gen.Theta() * 1000);
          T4_recoil_n_gen.Boost(-boost_irf);
+
+         //output tree info in lab frame
+         skim_recoil.SetPxPyPzE(px,py,pz,er);
+
       //   cout << "Recoil neutron generated 4-vector after boost " << T4_recoil_n_gen.X() << " , " << T4_recoil_n_gen.Y() << " , " << T4_recoil_n_gen.Z() << " , " << T4_recoil_n_gen.E() << " , "<< T4_recoil_n_gen.M() << endl;
          h1_recoil_n_generated_noweight->Fill(T4_recoil_n_gen.Vect().Mag());
          h1_recoil_generated_noweight->Fill(T4_recoil_n_gen.Vect().Mag());
@@ -591,15 +672,21 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
            h1_recoil_accepted_noweight->Fill(T4_recoil_n_acc.Vect().Mag());
            h1_recoil_n_accepted->Fill(T4_recoil_n_acc.Vect().Mag(), evt_weight);
            h1_recoil_accepted->Fill(T4_recoil_n_acc.Vect().Mag(), evt_weight);
+           //Fill outttree if at least recoil is accepted!
+           outtree->Fill();
            if (lead_track_exists == true && lead_track_good == true) { //found both tracks of the nn pair
               nn_tracks++;
+              nn_tracks_weighted+= evt_weight;
               nn_track_exists = true;
+              skim_nn_pair = 1;
            }
          }
        }
        if (gen_prt_pdg->at(2) == 2212) { //recoil is proton
+         skim_pid_recoil = 2212;
          //np events
          np_generated++;
+         np_generated_weighted=+ evt_weight;
          p_reco_generated++;
          p_reco_generated_weighted+= evt_weight;
          h1_pmiss_p_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil proton
@@ -616,6 +703,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
          h1_recoil_theta_generated->Fill(T4_recoil_p_gen.Theta() * 1000, evt_weight);
          h1_recoil_theta_p_generated->Fill(T4_recoil_p_gen.Theta() * 1000, evt_weight);
          h1_recoil_theta_generated_noweight->Fill(T4_recoil_p_gen.Theta() * 1000);
+
+         //output tree info in lab frame
+         skim_recoil.SetPxPyPzE(px,py,pz,er);
 
          T4_recoil_p_gen.Boost(-boost_irf);
       //   cout << "Recoil proton generated 4-vector after boost " << T4_recoil_p_gen.X() << " , " << T4_recoil_p_gen.Y() << " , " << T4_recoil_p_gen.Z() << " , " << T4_recoil_p_gen.E() << " , "<< T4_recoil_p_gen.M() << endl;
@@ -642,14 +732,19 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
            h1_recoil_accepted_noweight->Fill(T4_recoil_p_acc.Vect().Mag());
            h1_recoil_p_accepted->Fill(T4_recoil_p_acc.Vect().Mag(), evt_weight);
            h1_recoil_accepted->Fill(T4_recoil_p_acc.Vect().Mag(), evt_weight);
+           //Fill outttree if at least recoil is accepted!
+           outtree->Fill();
            if (lead_track_exists == true && lead_track_good == true) { //found both tracks of the np pair
               np_tracks++;
+              np_tracks_weighted+= evt_weight;
               np_track_exists = true;
+              skim_np_pair = 1;
            }
          }
        }
     }
     if (gen_prt_pdg->at(1) == 2212) { //leading is proton
+       skim_pid_lead = 2212;
        p_lead_generated++;
        p_lead_generated_weighted+= evt_weight;
        double lead_px = gen_prt_dir_x->at(1)*gen_prt_tot_mom->at(1);
@@ -662,6 +757,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
        h1_lead_theta_generated->Fill(T4_lead_p_gen.Theta() * 1000, evt_weight);
        h1_lead_theta_p_generated->Fill(T4_lead_p_gen.Theta() * 1000, evt_weight);
        h1_lead_theta_generated_noweight->Fill(T4_lead_p_gen.Theta() * 1000);
+
+       //output tree info in lab frame
+       skim_leading.SetPxPyPzE(lead_px,lead_py,lead_pz,lead_en);
 
        //Calculation of pmiss
        TLorentzVector T4_temp_lead_p_gen = T4_lead_p_gen;
@@ -699,8 +797,10 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
 
 
        if (gen_prt_pdg->at(2) == 2112) { //recoil is neutron
+         skim_pid_recoil = 2112;
          //pn events
          pn_generated++;
+         pn_generated_weighted=+ evt_weight;
          n_reco_generated++;
          n_reco_generated_weighted+= evt_weight;
          h1_pmiss_n_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil neuton
@@ -724,6 +824,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
          h1_recoil_n_generated->Fill(T4_recoil_n_gen.Vect().Mag(), evt_weight);
          h1_recoil_generated->Fill(T4_recoil_n_gen.Vect().Mag(), evt_weight);
 
+         //output tree info in lab frame
+         skim_recoil.SetPxPyPzE(px,py,pz,er);
+
 
          if (recoil_track_exists == true && recoil_track_good == true) { //independently if leading nucleon is also found in tracks
            if (tmp_track_recoil_pdg != gen_prt_pdg->at(2) ) {
@@ -744,15 +847,21 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
            h1_recoil_accepted_noweight->Fill(T4_recoil_n_acc.Vect().Mag());
            h1_recoil_n_accepted->Fill(T4_recoil_n_acc.Vect().Mag(), evt_weight);
            h1_recoil_accepted->Fill(T4_recoil_n_acc.Vect().Mag(), evt_weight);
+           //Fill outttree if at least recoil is accepted!
+           outtree->Fill();
            if (lead_track_exists == true && lead_track_good == true) { //found both tracks of the pn pair
               pn_tracks++;
+              pn_tracks_weighted+= evt_weight;
               pn_track_exists = true;
+              skim_pn_pair = 1;
            }
          }
        }
        if (gen_prt_pdg->at(2) == 2212) { //recoil is proton
+         skim_pid_recoil = 2212;
          //pp events
          pp_generated++;
+         pp_generated_weighted=+ evt_weight;
          p_reco_generated++;
          p_reco_generated_weighted+= evt_weight;
          h1_pmiss_p_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil proton
@@ -776,6 +885,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
          h1_recoil_p_generated->Fill(T4_recoil_p_gen.Vect().Mag(), evt_weight);
          h1_recoil_generated->Fill(T4_recoil_p_gen.Vect().Mag(), evt_weight);
 
+         //output tree info in lab frame
+         skim_recoil.SetPxPyPzE(px,py,pz,er);
+
 
          if (recoil_track_exists == true && recoil_track_good == true) { //independently if leading nucleon is also found in tracks
            if (tmp_track_recoil_pdg != gen_prt_pdg->at(2) ) {
@@ -796,9 +908,13 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
            h1_recoil_accepted_noweight->Fill(T4_recoil_p_acc.Vect().Mag());
            h1_recoil_p_accepted->Fill(T4_recoil_p_acc.Vect().Mag(), evt_weight);
            h1_recoil_accepted->Fill(T4_recoil_p_acc.Vect().Mag(), evt_weight);
+           //Fill outttree if at least recoil is accepted!
+           outtree->Fill();
            if (lead_track_exists == true && lead_track_good == true) { //found both tracks of the pp pair
               pp_tracks++;
+              pp_tracks_weighted+= evt_weight;
               pp_track_exists = true;
+              skim_pp_pair = 1;
            }
          }
        }
@@ -980,6 +1096,11 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
   double np_ratio = np_tracks / (double)np_generated;
   double nn_ratio = nn_tracks / (double)nn_generated;
 
+  double pp_weighted_ratio = pp_tracks_weighted / (double)pp_generated_weighted;
+  double pn_weighted_ratio = pn_tracks_weighted / (double)pn_generated_weighted;
+  double np_weighted_ratio = np_tracks_weighted / (double)np_generated_weighted;
+  double nn_weighted_ratio = nn_tracks_weighted / (double)nn_generated_weighted;
+
   double p_lead_ratio = p_lead_tracks / (double)p_lead_generated;
   double n_lead_ratio = n_lead_tracks / (double)n_lead_generated;
   double p_reco_ratio = p_reco_tracks / (double)p_reco_generated;
@@ -991,10 +1112,18 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
   double n_reco_weighted_ratio = n_reco_tracks_weighted / n_reco_generated_weighted;
 
 
-  cout << " Generated pp events " << pp_generated << " and #events with pp tracks " << pp_tracks << " = " << pp_ratio*100 << endl;
-  cout << " Generated pn events " << pn_generated << " and #events with pn tracks " << pn_tracks << " = " << pn_ratio*100 << endl;
-  cout << " Generated nn events " << nn_generated << " and #events with nn tracks " << nn_tracks << " = " << nn_ratio*100 << endl;
-  cout << " Generated np events " << np_generated << " and #events with np tracks " << np_tracks << " = " << np_ratio*100 << endl;
+  cout << " Generated pp events " << pp_generated;
+  cout << " and #events with pp tracks " << pp_tracks << " = " << pp_ratio*100;
+  cout << " and with weights ratio = " << pp_weighted_ratio*100 << endl;
+  cout << " Generated pn events " << pn_generated;
+  cout << " and #events with pn tracks " << pn_tracks << " = " << pn_ratio*100;
+  cout << " and with weights ratio = " << pn_weighted_ratio*100 << endl;
+  cout << " Generated nn events " << nn_generated;
+  cout << " and #events with nn tracks " << nn_tracks << " = " << nn_ratio*100 \;
+  cout << " and with weights ratio = " << nn_weighted_ratio*100 << endl;
+  cout << " Generated np events " << np_generated;
+  cout << " and #events with np tracks " << np_tracks << " = " << np_ratio*100;
+  cout << " and with weights ratio = " << np_weighted_ratio*100 << endl;
   cout << " Generated Leading protons "  << p_lead_generated;
   cout << " and #events with lead p tracks " << p_lead_tracks << " = " << p_lead_ratio*100;
   cout << " and with weights ratio = " << p_lead_weighted_ratio*100 << endl;
@@ -1213,6 +1342,7 @@ h1_recoil_accepted->Draw("SAME");
   h1_lead_theta_accepted_noweight->Write();
   h1_lead_theta_generated_noweight->Write();
 
+  outtree->Write();
   output->Close();
 
 }
