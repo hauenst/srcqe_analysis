@@ -672,14 +672,15 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
            h1_recoil_accepted_noweight->Fill(T4_recoil_n_acc.Vect().Mag());
            h1_recoil_n_accepted->Fill(T4_recoil_n_acc.Vect().Mag(), evt_weight);
            h1_recoil_accepted->Fill(T4_recoil_n_acc.Vect().Mag(), evt_weight);
-           //Fill outttree if at least recoil is accepted!
-           outtree->Fill();
+
            if (lead_track_exists == true && lead_track_good == true) { //found both tracks of the nn pair
               nn_tracks++;
               nn_tracks_weighted+= evt_weight;
               nn_track_exists = true;
               skim_nn_pair = 1;
            }
+           //Fill outttree if at least recoil is accepted!
+           outtree->Fill();
          }
        }
        if (gen_prt_pdg->at(2) == 2212) { //recoil is proton
@@ -732,14 +733,15 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
            h1_recoil_accepted_noweight->Fill(T4_recoil_p_acc.Vect().Mag());
            h1_recoil_p_accepted->Fill(T4_recoil_p_acc.Vect().Mag(), evt_weight);
            h1_recoil_accepted->Fill(T4_recoil_p_acc.Vect().Mag(), evt_weight);
-           //Fill outttree if at least recoil is accepted!
-           outtree->Fill();
+
            if (lead_track_exists == true && lead_track_good == true) { //found both tracks of the np pair
               np_tracks++;
               np_tracks_weighted+= evt_weight;
               np_track_exists = true;
               skim_np_pair = 1;
            }
+           //Fill outttree if at least recoil is accepted!
+           outtree->Fill();
          }
        }
     }
@@ -847,14 +849,15 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
            h1_recoil_accepted_noweight->Fill(T4_recoil_n_acc.Vect().Mag());
            h1_recoil_n_accepted->Fill(T4_recoil_n_acc.Vect().Mag(), evt_weight);
            h1_recoil_accepted->Fill(T4_recoil_n_acc.Vect().Mag(), evt_weight);
-           //Fill outttree if at least recoil is accepted!
-           outtree->Fill();
+
            if (lead_track_exists == true && lead_track_good == true) { //found both tracks of the pn pair
               pn_tracks++;
               pn_tracks_weighted+= evt_weight;
               pn_track_exists = true;
               skim_pn_pair = 1;
            }
+           //Fill outttree if at least recoil is accepted!
+           outtree->Fill();
          }
        }
        if (gen_prt_pdg->at(2) == 2212) { //recoil is proton
@@ -908,14 +911,15 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
            h1_recoil_accepted_noweight->Fill(T4_recoil_p_acc.Vect().Mag());
            h1_recoil_p_accepted->Fill(T4_recoil_p_acc.Vect().Mag(), evt_weight);
            h1_recoil_accepted->Fill(T4_recoil_p_acc.Vect().Mag(), evt_weight);
-           //Fill outttree if at least recoil is accepted!
-           outtree->Fill();
+
            if (lead_track_exists == true && lead_track_good == true) { //found both tracks of the pp pair
               pp_tracks++;
               pp_tracks_weighted+= evt_weight;
               pp_track_exists = true;
               skim_pp_pair = 1;
            }
+           //Fill outttree if at least recoil is accepted!
+           outtree->Fill();
          }
        }
     } //end if of checking for event topologies and existing tracks
