@@ -625,7 +625,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
          skim_pid_recoil = 2112;
          //nn events
          nn_generated++;
-         nn_generated_weighted=+ evt_weight;
+         nn_generated_weighted+= evt_weight;
          n_reco_generated++;
          n_reco_generated_weighted+= evt_weight;
          h1_pmiss_n_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil neuton
@@ -686,7 +686,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
          skim_pid_recoil = 2212;
          //np events
          np_generated++;
-         np_generated_weighted=+ evt_weight;
+         np_generated_weighted+= evt_weight;
          p_reco_generated++;
          p_reco_generated_weighted+= evt_weight;
          h1_pmiss_p_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil proton
@@ -800,7 +800,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
          skim_pid_recoil = 2112;
          //pn events
          pn_generated++;
-         pn_generated_weighted=+ evt_weight;
+         pn_generated_weighted+= evt_weight;
          n_reco_generated++;
          n_reco_generated_weighted+= evt_weight;
          h1_pmiss_n_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil neuton
@@ -861,7 +861,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
          skim_pid_recoil = 2212;
          //pp events
          pp_generated++;
-         pp_generated_weighted=+ evt_weight;
+         pp_generated_weighted+= evt_weight;
          p_reco_generated++;
          p_reco_generated_weighted+= evt_weight;
          h1_pmiss_p_generated->Fill(pmiss, evt_weight); //calculate pmiss for recoil proton
@@ -1119,7 +1119,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
   cout << " and #events with pn tracks " << pn_tracks << " = " << pn_ratio*100;
   cout << " and with weights ratio = " << pn_weighted_ratio*100 << endl;
   cout << " Generated nn events " << nn_generated;
-  cout << " and #events with nn tracks " << nn_tracks << " = " << nn_ratio*100 \;
+  cout << " and #events with nn tracks " << nn_tracks << " = " << nn_ratio*100 ;
   cout << " and with weights ratio = " << nn_weighted_ratio*100 << endl;
   cout << " Generated np events " << np_generated;
   cout << " and #events with np tracks " << np_tracks << " = " << np_ratio*100;
