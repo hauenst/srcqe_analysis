@@ -35,7 +35,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
   outtree->Branch("recoil", &skim_recoil);
   outtree->Branch("pid_leading", &skim_pid_lead);
   outtree->Branch("pid_recoil", &skim_pid_recoil);
-  outtree->Branch("ebeam_mom", &skim_pid_recoil);
+  outtree->Branch("ebeam_mom", &skim_ebeam_mom);
   outtree->Branch("target_A", &skim_targetA);
   outtree->Branch("target_Z", &skim_targetZ);
   outtree->Branch("target_mass", &skim_targetmass);
