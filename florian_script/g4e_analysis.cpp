@@ -27,6 +27,8 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
   int skim_pn_pair = 0;
   int skim_np_pair = 0;
   int skim_nn_pair = 0;
+  double skim_xB = 0;
+  double skim_Q2 = 0;
 
   //Define outtree Branches
   outtree->Branch("weight", &skim_weight);
@@ -44,6 +46,8 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
   outtree->Branch("np_pair_accept", &skim_np_pair);
   outtree->Branch("pn_pair_accept", &skim_pn_pair);
   outtree->Branch("nn_pair_accept", &skim_nn_pair);
+  outtree->Branch("Q2", &skim_Q2);
+  outtree->Branch("xB", &skim_xB);
 
   //make this dependent on file !!!!!
   TLorentzVector ebeam_coll(0,0,-electronmomentum,electronmomentum);
@@ -363,6 +367,8 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
     skim_targetZ    = targetZ;
     skim_targetmass = mass_target;
     skim_ionenergy  = ionenergy;
+    skim_xB         = evt_true_x;
+    skim_Q2         = evt_true_q2;
 
 //  for (int i = 0; i < 100; i++) {
     evt_tree->GetEntry(i);
@@ -679,8 +685,6 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
               nn_track_exists = true;
               skim_nn_pair = 1;
            }
-           //Fill outttree if at least recoil is accepted!
-           outtree->Fill();
          }
        }
        if (gen_prt_pdg->at(2) == 2212) { //recoil is proton
@@ -740,8 +744,6 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
               np_track_exists = true;
               skim_np_pair = 1;
            }
-           //Fill outttree if at least recoil is accepted!
-           outtree->Fill();
          }
        }
     }
@@ -856,8 +858,6 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
               pn_track_exists = true;
               skim_pn_pair = 1;
            }
-           //Fill outttree if at least recoil is accepted!
-           outtree->Fill();
          }
        }
        if (gen_prt_pdg->at(2) == 2212) { //recoil is proton
@@ -918,10 +918,11 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
               pp_track_exists = true;
               skim_pp_pair = 1;
            }
-           //Fill outttree if at least recoil is accepted!
-           outtree->Fill();
+
          }
        }
+
+       outtree->Fill();
     } //end if of checking for event topologies and existing tracks
 
 
