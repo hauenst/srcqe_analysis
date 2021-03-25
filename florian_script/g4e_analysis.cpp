@@ -367,8 +367,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
     skim_targetZ    = targetZ;
     skim_targetmass = mass_target;
     skim_ionenergy  = ionenergy;
-    skim_xB         = evt_true_x;
-    skim_Q2         = evt_true_q2;
+
 
 //  for (int i = 0; i < 100; i++) {
     evt_tree->GetEntry(i);
@@ -575,6 +574,8 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
     //Set electron values for outtree ( from lab system) and weight
     skim_electron.SetPxPyPzE(ele_px,ele_py,ele_pz,ele_en);
     skim_weight = evt_weight;
+    skim_xB         = evt_true_x;
+    skim_Q2         = evt_true_q2;
 
     if (gen_prt_pdg->at(1) == 2112) { //leading is neutron
        skim_pid_lead = 2112;
