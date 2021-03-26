@@ -922,8 +922,11 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
 
          }
        }
+       //Fill outtree if recoil is accepted
+       if (recoil_track_exists == true && recoil_track_good == true){
+         outtree->Fill();
+       }
 
-       outtree->Fill();
     } //end if of checking for event topologies and existing tracks
 
 
