@@ -3,7 +3,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
   //This only works for older g4e version outputs
   bool debug = false;
   bool fillhit = true;
-  double ZDC_r_cut = 240; //[mm] //was 250 before
+  double ZDC_r_cut = 220; //[mm] //was 250 before
   double farforwardlimit = 20; //mrad
   double centrallimitlow = 30; //mrad
   gStyle->SetOptStat(0);
@@ -529,10 +529,10 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
     if ( (count_lead_hits_RP > 2 || count_lead_hits_B0 > 3 || count_lead_hits_OFF > 1) && count_lead_central==0) {
       lead_track_good = true; //good leading proton track
     }
-    if (  count_lead_central > 2  && (count_lead_hits_RP+count_lead_hits_B0+count_lead_hits_OFF) < 2) {
+    if (  count_lead_central > 2  && (count_lead_hits_RP+count_lead_hits_B0+count_lead_hits_OFF) < 3) {
       lead_track_good = true; //good leading proton track
     }
-    if (  count_lead_central_neutron > 2 ) {
+    if (  count_lead_central_neutron > 0 ) {
       lead_track_good = true; //good leading neutron track
     }
     if (count_recoil_hits_RP > 2 || count_recoil_hits_B0 > 3 || count_recoil_hits_OFF > 1) {
@@ -605,7 +605,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
        h1_lead_theta_generated_noweight->Fill(T4_lead_n_gen.Theta() * 1000);
 
        //hard cut on area without detectors
-       if (T4_lead_n_gen.Theta() * 1000 >= farforwardlimit && T4_lead_n_gen.Theta() * 1000 < centrallimitlow) {
+       if ((T4_lead_n_gen.Theta() * 1000) >= farforwardlimit && (T4_lead_n_gen.Theta()*1000) < centrallimitlow) {
          lead_track_good = false;
        }
 
