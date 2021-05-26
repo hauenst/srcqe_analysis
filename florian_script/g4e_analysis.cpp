@@ -529,7 +529,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
     if ( (count_lead_hits_RP > 2 || count_lead_hits_B0 > 3 || count_lead_hits_OFF > 1) && count_lead_central==0) {
       lead_track_good = true; //good leading proton track
     }
-    if (  count_lead_central > 2  && (count_lead_hits_RP+count_lead_hits_B0+count_lead_hits_OFF) < 3) {
+    if (  count_lead_central > 0  && (count_lead_hits_RP+count_lead_hits_B0+count_lead_hits_OFF) < 3) {
       lead_track_good = true; //good leading proton track
     }
     if (  count_lead_central_neutron > 0 ) {
@@ -775,6 +775,10 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
               skim_np_pair = 1;
            }
          }
+       }
+       //Fill outtree if recoil is accepted
+       if (recoil_track_exists == true && recoil_track_good == true){
+         outtree->Fill();
        }
     }
     if (gen_prt_pdg->at(1) == 2212) { //leading is proton
