@@ -3,7 +3,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
   //This only works for older g4e version outputs
   bool debug = false;
   bool fillhit = true;
-  double ZDC_r_cut = 250; //[mm]
+  double ZDC_r_cut = 240; //[mm] //was 250 before
+  double farforwardlimit = 20; //mrad
+  double centrallimitlow = 30; //mrad
   gStyle->SetOptStat(0);
   TFile *inputfile = new TFile(inputstring,"READ");
   TTree *evt_tree = (TTree*)inputfile->Get("events");
@@ -266,12 +268,12 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
   TH1F *h1_lead_theta_generated_noweight   = new TH1F("h1_lead_theta_generated_noweight","Theta generated leading (no weight)",160,0,80);
   TH1F *h1_lead_theta_accepted_noweight    = new TH1F("h1_lead_theta_accepted_noweight","Theta accepted leading (no weight)",160,0,80);
    //Histo for pIRF acceptance
-  TH1F *h1_recoil_generated = new TH1F("h1_recoil_generated","P_irf generated recoil",100,0,2);
-  TH1F *h1_recoil_n_generated = new TH1F("h1_recoil_n_generated","P_irf generated neutron",100,0,2);
-  TH1F *h1_recoil_p_generated = new TH1F("h1_recoil_p_generated","P_irf generated proton",100,0,2);
-  TH1F *h1_recoil_accepted = new TH1F("h1_recoil_accepted","P_irf accepted recoil",100,0,2);
-  TH1F *h1_recoil_n_accepted = new TH1F("h1_recoil_n_accepted","P_irf accepted neutron",100,0,2);
-  TH1F *h1_recoil_p_accepted = new TH1F("h1_recoil_p_accepted","P_irf accepted proton",100,0,2);
+  TH1F *h1_recoil_generated = new TH1F("h1_recoil_generated","P_irf generated recoil",50,0,2);
+  TH1F *h1_recoil_n_generated = new TH1F("h1_recoil_n_generated","P_irf generated neutron",50,0,2);
+  TH1F *h1_recoil_p_generated = new TH1F("h1_recoil_p_generated","P_irf generated proton",50,0,2);
+  TH1F *h1_recoil_accepted = new TH1F("h1_recoil_accepted","P_irf accepted recoil",50,0,2);
+  TH1F *h1_recoil_n_accepted = new TH1F("h1_recoil_n_accepted","P_irf accepted neutron",50,0,2);
+  TH1F *h1_recoil_p_accepted = new TH1F("h1_recoil_p_accepted","P_irf accepted proton",50,0,2);
 
   TH1F *h1_recoil_generated_noweight   = new TH1F("h1_recoil_generated_noweight","P_irf generated recoil",200,0,2);
   TH1F *h1_recoil_n_generated_noweight = new TH1F("h1_recoil_n_generated_noweight","P_irf generated neutron",200,0,2);
@@ -464,6 +466,7 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
     int count_recoil_hits_B0 = 0;
     int count_recoil_hits_OFF = 0;
     int count_recoil_hits_RP = 0;
+    int count_lead_central_neutron = 0;
 
     for (int ihit = 0 ; ihit < hit_count ; ihit++) {
          if (hit_trk_id->at(ihit) == 2 && hit_ptr_id->at(ihit) == 2212   ) { //leading proton information
@@ -489,6 +492,9 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
               {
                     lead_track_good = true; //assume good leading neutron track if one ZDC hit
               }
+          }
+          if (hit_vol_name->at(ihit).rfind("ci_",0) == 0 || hit_vol_name->at(ihit).rfind("cb_",0) == 0 || hit_vol_name->at(ihit).rfind("H_C",0) == 0 ) { //central hits
+              count_lead_central_neutron++;
           }
         }
         if (hit_trk_id->at(ihit) == 3 && hit_ptr_id->at(ihit) == 2212  ) { //recoil proton information
@@ -519,9 +525,15 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
   //  if (count_lead_hits_RP > 0 || count_lead_hits_B0 > 0 || count_lead_hits_OFF > 0) {
   //    cout << "RP " <<  count_lead_hits_RP<< " , B0 " << count_lead_hits_B0<< " , OFF " << count_lead_hits_OFF << endl;
   //  }
-    //Assign if good leading or recoil proton track based on number of hits in detectors (no central for leading protons)
+    //Assign if good leading or recoil proton track based on number of hits in detectors (no central for leading protons if something in forward and vice versa)
     if ( (count_lead_hits_RP > 2 || count_lead_hits_B0 > 3 || count_lead_hits_OFF > 1) && count_lead_central==0) {
       lead_track_good = true; //good leading proton track
+    }
+    if (  count_lead_central > 2  && (count_lead_hits_RP+count_lead_hits_B0+count_lead_hits_OFF) < 2) {
+      lead_track_good = true; //good leading proton track
+    }
+    if (  count_lead_central_neutron > 2 ) {
+      lead_track_good = true; //good leading neutron track
     }
     if (count_recoil_hits_RP > 2 || count_recoil_hits_B0 > 3 || count_recoil_hits_OFF > 1) {
       recoil_track_good = true; //good recoil proton track
@@ -592,6 +604,11 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
        h1_lead_theta_n_generated->Fill(T4_lead_n_gen.Theta() * 1000, evt_weight);
        h1_lead_theta_generated_noweight->Fill(T4_lead_n_gen.Theta() * 1000);
 
+       //hard cut on area without detectors
+       if (T4_lead_n_gen.Theta() * 1000 >= farforwardlimit && T4_lead_n_gen.Theta() * 1000 < centrallimitlow) {
+         lead_track_good = false;
+       }
+
        //output tree info in lab frame
        skim_leading.SetPxPyPzE(lead_px,lead_py,lead_pz,lead_en);
 
@@ -649,6 +666,13 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
          h1_recoil_theta_generated->Fill(T4_recoil_n_gen.Theta() * 1000, evt_weight);
          h1_recoil_theta_n_generated->Fill(T4_recoil_n_gen.Theta() * 1000, evt_weight);
          h1_recoil_theta_generated_noweight->Fill(T4_recoil_n_gen.Theta() * 1000);
+
+
+         //hard cut on area without detectors
+         if (T4_recoil_n_gen.Theta() * 1000 >= farforwardlimit && T4_recoil_n_gen.Theta() * 1000 < centrallimitlow) {
+           recoil_track_good = false;
+         }
+
          T4_recoil_n_gen.Boost(-boost_irf);
 
          //output tree info in lab frame
@@ -710,6 +734,11 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
          h1_recoil_theta_p_generated->Fill(T4_recoil_p_gen.Theta() * 1000, evt_weight);
          h1_recoil_theta_generated_noweight->Fill(T4_recoil_p_gen.Theta() * 1000);
 
+         //hard cut on area without detectors
+         if (T4_recoil_p_gen.Theta() * 1000 >= farforwardlimit && T4_recoil_p_gen.Theta() * 1000 < centrallimitlow) {
+           recoil_track_good = false;
+         }
+
          //output tree info in lab frame
          skim_recoil.SetPxPyPzE(px,py,pz,er);
 
@@ -762,6 +791,10 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
        h1_lead_theta_generated->Fill(T4_lead_p_gen.Theta() * 1000, evt_weight);
        h1_lead_theta_p_generated->Fill(T4_lead_p_gen.Theta() * 1000, evt_weight);
        h1_lead_theta_generated_noweight->Fill(T4_lead_p_gen.Theta() * 1000);
+
+       if (T4_lead_p_gen.Theta() * 1000 >= farforwardlimit && T4_lead_p_gen.Theta() * 1000 < centrallimitlow) {
+         lead_track_good = false;
+       }
 
        //output tree info in lab frame
        skim_leading.SetPxPyPzE(lead_px,lead_py,lead_pz,lead_en);
@@ -822,6 +855,13 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
          h1_recoil_theta_generated->Fill(T4_recoil_n_gen.Theta() * 1000, evt_weight);
          h1_recoil_theta_n_generated->Fill(T4_recoil_n_gen.Theta() * 1000, evt_weight);
          h1_recoil_theta_generated_noweight->Fill(T4_recoil_n_gen.Theta() * 1000);
+
+         //hard cut on area without detectors
+         if (T4_recoil_n_gen.Theta() * 1000 >= farforwardlimit && T4_recoil_n_gen.Theta() * 1000 < centrallimitlow) {
+           recoil_track_good = false;
+         }
+
+
          T4_recoil_n_gen.Boost(-boost_irf);
       //   cout << "Recoil neutron generated 4-vector after boost " << T4_recoil_n_gen.X() << " , " << T4_recoil_n_gen.Y() << " , " << T4_recoil_n_gen.Z() << " , " << T4_recoil_n_gen.E() << " , "<< T4_recoil_n_gen.M() << endl;
          h1_recoil_n_generated_noweight->Fill(T4_recoil_n_gen.Vect().Mag());
@@ -882,6 +922,12 @@ void g4e_analysis (TString inputstring, int targetA, int setting, double electro
          h1_recoil_theta_generated->Fill(T4_recoil_p_gen.Theta() * 1000, evt_weight);
          h1_recoil_theta_p_generated->Fill(T4_recoil_p_gen.Theta() * 1000, evt_weight);
          h1_recoil_theta_generated_noweight->Fill(T4_recoil_p_gen.Theta() * 1000);
+
+         //hard cut on area without detectors
+         if (T4_recoil_p_gen.Theta() * 1000 >= farforwardlimit && T4_recoil_p_gen.Theta() * 1000 < centrallimitlow) {
+           recoil_track_good = false;
+         }
+
          T4_recoil_p_gen.Boost(-boost_irf);
       //   cout << "Recoil proton generated 4-vector after boost " << T4_recoil_p_gen.X() << " , " << T4_recoil_p_gen.Y() << " , " << T4_recoil_p_gen.Z() << " , " << T4_recoil_p_gen.E() << " , "<< T4_recoil_p_gen.M() << endl;
          h1_recoil_p_generated_noweight->Fill(T4_recoil_p_gen.Vect().Mag());
